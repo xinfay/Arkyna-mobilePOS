@@ -5,7 +5,13 @@ import 'package:flutter_grid_button/flutter_grid_button.dart';
 import 'dart:collection';
 
 void main() {
-  runApp(MyApp());
+  final shopping_cart_list = ShoppingCartList();
+  
+
+  
+
+
+  runApp(ChangeNotifierProvider(create: (_) => shopping_cart_list, child: MyApp()));
 }
 
 class MyApp extends StatelessWidget {
@@ -51,18 +57,41 @@ class MyAppState extends ChangeNotifier {
   // name, sku, category, price, stock, status
 
   // currently using mock data to test
-  List<String> inventory = [];
+  final List<String> _items = [];
+  List<String> get items => List.unmodifiable(_items);
+  void add(String i) {
+    _items.add(i);
+    notifyListeners();
+  }
 }
 
 // ...
+
 
 class MyHomePage extends StatefulWidget {
   @override
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
+class ShoppingCartList extends ChangeNotifier {
+  final List<String> _items = [];
+  List<String> get items => List.unmodifiable(_items);
+
+  void add(String item) {
+    _items.add(item);
+    notifyListeners();
+  }
+
+  void remove(String item) {
+    _items.remove(item);
+    notifyListeners();
+  }
+}
+
+
 class _MyHomePageState extends State<MyHomePage> {
   var selectedIndex = 0;
+
 
   @override
   Widget build(BuildContext context) {
@@ -73,9 +102,9 @@ class _MyHomePageState extends State<MyHomePage> {
       case 1:
         page = Placeholder(); // Placeholder for the analytics page
       case 2:
-        page = Placeholder(); // Placeholder for the inventory page
+        page = InventoryPage(); // Placeholder for the inventory page
       case 3:
-        page = DynamicGridPage(); // Placeholder for the pos config page
+        page = Placeholder(); // Placeholder for the pos config page
       case 4:
         page = CheckoutPage(); // Placeholder for the checkout page
       case 5:
@@ -139,7 +168,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 }
 
-class DynamicGridPage extends StatelessWidget {
+class InventoryPage extends StatelessWidget {
   final List<String> buttonLabels = [
     'Button 1',
     'Button 2',
@@ -232,12 +261,25 @@ class CheckoutPage extends StatelessWidget {
 }
 */
 
+
 class CheckoutPage extends StatelessWidget {
-  final _focusNode = FocusNode(canRequestFocus: false, skipTraversal: true);
+  final List<String> buttonLabels = [
+    'Button 1',
+    'Button 2',
+    'Button 3',
+    'Button 4',
+    'Button 5',
+    'Button 6',
+    'Button 7',
+    'Button 8',
+    'Button 9',
+    'Button 10',
+  ];
 
   @override
   Widget build(BuildContext context) {
-    const textStyle = TextStyle(fontSize: 26);
+    context.read<ShoppingCartList>().add("test item");
+    context.read<ShoppingCartList>().add("test item 2");
     LinkedHashMap<String, int> cart = LinkedHashMap();
 
     // would we import the menu options? read from csv/txt file?
@@ -250,12 +292,9 @@ class CheckoutPage extends StatelessWidget {
       'Espresso': 0,
     });
 
-    return MaterialApp(
-      home: Scaffold(
-        appBar: AppBar(
-          title: const Text('Checkout', style: TextStyle(fontSize: 28)),
-        ),
-        body: Builder(builder: (context) {
+          final cart_items = context.watch<ShoppingCartList>().items;
+          print(cart_items);
+
           return Row(
             children: [
               /*
@@ -338,97 +377,296 @@ class CheckoutPage extends StatelessWidget {
 
               Flexible(
                 flex: 7, // This takes 7/11 of the available space
-                child: Container(
-                  color: const Color.fromARGB(255, 223, 240, 224),
+                child: GridView.builder(
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 3, // Number of columns
+                    crossAxisSpacing: 8.0, // Spacing between columns
+                    mainAxisSpacing: 8.0, // Spacing between rows
+                  ),
+                  itemCount: buttonLabels.length,
+                  itemBuilder: (context, index) {
+                    return ElevatedButton(
+                      onPressed: () {
+                        // Define button behavior here
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('You pressed ${buttonLabels[index]}'),
+                          ),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue, // Button color
+                        shape: RoundedRectangleBorder(
+                          borderRadius:
+                              BorderRadius.zero, // Makes the button square
+                        ),
+                      ),
+                      child: Text(
+                        buttonLabels[index],
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    );
+                  },
                 ),
+                // child: Container(
+
+                //   color: const Color.fromARGB(255, 223, 240, 224),
+                // ),
               ),
               // Current Order panel
               Flexible(
                 flex: 4, // This takes 4/11 of the available space
-                child: Container(
-                  color: Colors.green,
+                child: Column(
+                  children: [
+                    const Padding(
+                      padding: EdgeInsets.all(16.0),
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          'No items in cart',
+                          style: TextStyle(color: Colors.grey),
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      
+                      child: cart_items.isEmpty
+                        ? Center(
+                          child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: const [
+                            Icon(Icons.receipt_long,
+                              size: 60, color: Colors.grey),
+                            SizedBox(height: 10),
+                            Text(
+                            'Your cart is empty',
+                            style: TextStyle(
+                              fontSize: 18, color: Colors.black54),
+                            ),
+                            Text(
+                            'Add items from the menu',
+                            style: TextStyle(color: Colors.grey),
+                            ),
+                          ],
+                          ),
+                        )
+                        : ListView.builder(
+                          itemCount: cart_items.length,
+                          itemBuilder: (context, index) {
+                          return ListTile(
+                            title: Text(cart_items[index]),
+                            trailing: IconButton(
+                            icon: Icon(Icons.remove_circle_outline),
+                            onPressed: () {
+                              context
+                                .read<ShoppingCartList>()
+                                .remove(cart_items[index]);
+                            },
+                            ),
+                          );
+                          },
+                        ),
+                    ),
+                    const Divider(height: 1),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 8),
+                      child: Column(
+                        children: [
+                          _buildPriceRow('Subtotal', '\$0.00'),
+                          _buildPriceRow('Tax (7.25%)', '\$0.00'),
+                          const SizedBox(height: 8),
+                          Row(
+                            children: const [
+                              Icon(Icons.local_offer_outlined,
+                                  color: Colors.black54),
+                              SizedBox(width: 8),
+                              Text(
+                                'Add Discount',
+                                style: TextStyle(
+                                    color: Colors.black87,
+                                    fontWeight: FontWeight.w500),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    const Divider(height: 1),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 12),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: const [
+                          Text('Total',
+                              style: TextStyle(
+                                  fontSize: 18, fontWeight: FontWeight.bold)),
+                          Text('\$0.00',
+                              style: TextStyle(
+                                  fontSize: 18, fontWeight: FontWeight.bold)),
+                        ],
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(20),
+                      child: SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          onPressed: null,
+                          icon: const Icon(Icons.shopping_cart_checkout),
+                          label: const Text('Checkout'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.grey.shade400,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            disabledBackgroundColor: Colors.grey.shade400,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
           );
 
-          // experimenting with best way to display checkout
+  }
 
-          /*
-          return Padding(
-            padding: const EdgeInsets.all(18.0),
-            child: GridButton(
-              textStyle: textStyle,
-              borderColor: Colors.grey[300],
-              borderWidth: 2,
-              onPressed: (dynamic val) {
-                _focusNode.requestFocus();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(val.toString()),
-                    duration: const Duration(milliseconds: 400),
-                  ),
-                );
-              },
-              items: [
-                [
-                  GridButtonItem(
-                    title: "Black",
-                    color: Colors.black,
-                    textStyle: textStyle.copyWith(color: Colors.white),
-                  ),
-                  GridButtonItem(
-                    title: "Red",
-                    color: Colors.red,
-                    textStyle: textStyle.copyWith(color: Colors.white),
-                  ),
-                ],
-                [
-                  GridButtonItem(
-                      child: const Icon(
-                        Icons.image_outlined,
-                        size: 50,
-                      ),
-                      focusNode: _focusNode,
-                      textStyle: textStyle.copyWith(color: Colors.white),
-                      value: 'image',
-                      color: Colors.blue,
-                      shape: const BorderSide(width: 4),
-                      borderRadius: 30)
-                ],
-                [
-                  const GridButtonItem(title: "7"),
-                  const GridButtonItem(title: "8"),
-                  const GridButtonItem(title: "9"),
-                  GridButtonItem(title: "×", color: Colors.grey[300]),
-                ],
-                [
-                  const GridButtonItem(title: "4"),
-                  const GridButtonItem(title: "5"),
-                  const GridButtonItem(title: "6"),
-                  GridButtonItem(title: "-", color: Colors.grey[300]),
-                ],
-                [
-                  const GridButtonItem(title: "1"),
-                  const GridButtonItem(title: "2"),
-                  const GridButtonItem(title: "3"),
-                  GridButtonItem(title: "+", color: Colors.grey[300]),
-                ],
-                [
-                  const GridButtonItem(title: "0"),
-                  const GridButtonItem(
-                      title: "000", flex: 2, longPressValue: 400),
-                  GridButtonItem(title: "=", color: Colors.grey[300]),
-                ],
-              ],
-            ),
-          );
-          */
-        }),
+  static Widget _buildPriceRow(String label, String amount) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: const TextStyle(color: Colors.black54)),
+          Text(amount, style: const TextStyle(color: Colors.black54)),
+        ],
       ),
     );
   }
 }
+
+/*
+class CheckoutPage extends StatelessWidget {
+  const CheckoutPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Current Order'),
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
+        elevation: 1,
+      ),
+      body: Column(
+        children: [
+          const Padding(
+            padding: EdgeInsets.all(16.0),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'No items in cart',
+                style: TextStyle(color: Colors.grey),
+              ),
+            ),
+          ),
+          Expanded(
+            child: Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: const [
+                  Icon(Icons.receipt_long, size: 60, color: Colors.grey),
+                  SizedBox(height: 10),
+                  Text(
+                    'Your cart is empty',
+                    style: TextStyle(fontSize: 18, color: Colors.black54),
+                  ),
+                  Text(
+                    'Add items from the menu',
+                    style: TextStyle(color: Colors.grey),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const Divider(height: 1),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+            child: Column(
+              children: [
+                _buildPriceRow('Subtotal', '\$0.00'),
+                _buildPriceRow('Tax (7.25%)', '\$0.00'),
+                const SizedBox(height: 8),
+                Row(
+                  children: const [
+                    Icon(Icons.local_offer_outlined, color: Colors.black54),
+                    SizedBox(width: 8),
+                    Text(
+                      'Add Discount',
+                      style: TextStyle(
+                          color: Colors.black87,
+                          fontWeight: FontWeight.w500),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          const Divider(height: 1),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: const [
+                Text('Total',
+                    style:
+                        TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                Text('\$0.00',
+                    style:
+                        TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(20),
+            child: SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: null,
+                icon: const Icon(Icons.shopping_cart_checkout),
+                label: const Text('Checkout'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.grey.shade400,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  disabledBackgroundColor: Colors.grey.shade400,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  static Widget _buildPriceRow(String label, String amount) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: const TextStyle(color: Colors.black54)),
+          Text(amount, style: const TextStyle(color: Colors.black54)),
+        ],
+      ),
+    );
+  }
+}
+
+
+*/
 
 /*
 class DashboardPage extends StatelessWidget {
