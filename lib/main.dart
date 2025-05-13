@@ -35,24 +35,6 @@ class MyApp extends StatelessWidget {
 }
 
 class MyAppState extends ChangeNotifier {
-  // var current = WordPair.random();
-
-  // void getNext() {
-  //   current = WordPair.random();
-  //   notifyListeners();
-  // }
-
-  // var favorites = <WordPair>[];
-
-  // void toggleFavorite() {
-  //   if (favorites.contains(current)) {
-  //     favorites.remove(current);
-  //   } else {
-  //     favorites.add(current);
-  //   }
-  //   notifyListeners();
-  // }
-
   // How would the inventory be stored? possibly import a csv file w/ categories:
   // name, sku, category, price, stock, status
 
@@ -225,42 +207,6 @@ class InventoryPage extends StatelessWidget {
   }
 }
 
-/*
-class CheckoutPage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    var appState = context.watch<MyAppState>();
-    var favorites = appState.favorites;
-    if (favorites.isEmpty) {
-      return Center (
-        child: Text(
-          "No favourites yet :(",
-          style: TextStyle(fontSize: 28),
-        ),
-      );
-    }
-    else {
-      return ListView(
-        children: [
-          Padding (
-            padding: const EdgeInsets.all(20),
-            child: Text("You have ${favorites.length} favorites:", style: TextStyle(fontSize: 28)),
-          ),
-
-          for (var pair in favorites) 
-            ListTile(
-              leading: Icon(Icons.favorite),
-              title: Text(pair.asLowerCase, style: TextStyle(fontSize: 24)),
-            ),
-          
-        ],
-      );
-    }
-
-  }
-}
-*/
-
 
 class CheckoutPage extends StatelessWidget {
   final List<String> buttonLabels = [
@@ -278,8 +224,7 @@ class CheckoutPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    context.read<ShoppingCartList>().add("test item");
-    context.read<ShoppingCartList>().add("test item 2");
+
     LinkedHashMap<String, int> cart = LinkedHashMap();
 
     // would we import the menu options? read from csv/txt file?
@@ -297,84 +242,6 @@ class CheckoutPage extends StatelessWidget {
 
           return Row(
             children: [
-              /*
-            Flexible(
-              flex: 7, // This takes 7/11 of the available space
-              child: Column(
-                children: [
-                  Container(
-                    color: Colors.red,
-                    child: GridButton(
-                      textStyle: textStyle,
-                      borderColor: Colors.grey[300],
-                      borderWidth: 2,
-                      onPressed: (dynamic val) {
-                        _focusNode.requestFocus();
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(val.toString()),
-                            duration: const Duration(milliseconds: 400),
-                          ),
-                        );
-                      },
-                      items: [
-                        /*
-                        [
-                          GridButtonItem(
-                            title: "Cappuccino",
-                            color: Colors.blue,
-                            textStyle: textStyle.copyWith(color: Colors.white),
-                          ),
-                          GridButtonItem(
-                            title: "Latte",
-                            color: Colors.green,
-                            textStyle: textStyle.copyWith(color: Colors.white),
-                          ),
-                        ],
-                        [
-                          GridButtonItem(
-                              child: const Icon(
-                                Icons.image_outlined,
-                                size: 50,
-                              ),
-                              focusNode: _focusNode,
-                              textStyle: textStyle.copyWith(color: Colors.white),
-                              value: 'image',
-                              color: Colors.blue,
-                              shape: const BorderSide(width: 4),
-                              borderRadius: 30)
-                        ],
-                        [
-                          const GridButtonItem(title: "7"),
-                          const GridButtonItem(title: "8"),
-                          const GridButtonItem(title: "9"),
-                          GridButtonItem(title: "×", color: Colors.grey[300]),
-                        ],
-                        [
-                          const GridButtonItem(title: "4"),
-                          const GridButtonItem(title: "5"),
-                          const GridButtonItem(title: "6"),
-                          GridButtonItem(title: "-", color: Colors.grey[300]),
-                        ], */
-                        [
-                          const GridButtonItem(title: "1"),
-                          const GridButtonItem(title: "2"),
-                          const GridButtonItem(title: "3"),
-                          GridButtonItem(title: "+", color: Colors.grey[300]),
-                        ],
-                        [
-                          const GridButtonItem(title: "0"),
-                          const GridButtonItem(
-                              title: "000", flex: 2, longPressValue: 400),
-                          GridButtonItem(title: "=", color: Colors.grey[300]),
-                        ],
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ), */
-
               Flexible(
                 flex: 7, // This takes 7/11 of the available space
                 child: GridView.builder(
@@ -387,6 +254,7 @@ class CheckoutPage extends StatelessWidget {
                   itemBuilder: (context, index) {
                     return ElevatedButton(
                       onPressed: () {
+                        context.read<ShoppingCartList>().add("button $index");
                         // Define button behavior here
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
