@@ -26,23 +26,30 @@ class MyApp extends StatelessWidget {
 }
 
 class MyAppState extends ChangeNotifier {
-  var current = WordPair.random();
+  // var current = WordPair.random();
 
-  void getNext() {
-    current = WordPair.random();
-    notifyListeners();
-  }
+  // void getNext() {
+  //   current = WordPair.random();
+  //   notifyListeners();
+  // }
   
-  var favorites = <WordPair>[];
+  // var favorites = <WordPair>[];
 
-  void toggleFavorite() {
-    if (favorites.contains(current)) {
-      favorites.remove(current);
-    } else {
-      favorites.add(current);
-    }
-    notifyListeners();
-  }
+  // void toggleFavorite() {
+  //   if (favorites.contains(current)) {
+  //     favorites.remove(current);
+  //   } else {
+  //     favorites.add(current);
+  //   }
+  //   notifyListeners();
+  // }
+
+  // How would the inventory be stored? possibly import a csv file w/ categories:
+  // name, sku, category, price, stock, status
+
+  // currently using mock data to test
+  List<String> inventory = [];
+
 }
 
 // ...
@@ -61,22 +68,17 @@ class _MyHomePageState extends State<MyHomePage> {
     Widget page;
     switch (selectedIndex) {
       case 0:
-        page = DashboardPage();
-        break;
+        page = Placeholder(); // Placeholder for the dashboard page
       case 1:
         page = Placeholder(); // Placeholder for the analytics page
       case 2:
         page = Placeholder(); // Placeholder for the inventory page
-        break;
       case 3:
         page = Placeholder(); // Placeholder for the pos config page
-        break;
       case 4:
-        page = CheckoutPage();
-        break;
+        page = Placeholder(); // Placeholder for the checkout page
       case 5:
         page = Placeholder(); // Placeholder for the transactions page
-        break;
       default:
         throw UnimplementedError('No widget for $selectedIndex');
     }
@@ -84,7 +86,8 @@ class _MyHomePageState extends State<MyHomePage> {
     return LayoutBuilder(
       builder: (context, constraints) {
         return Scaffold(
-          body: Row(
+          // make body a column that contains a text and a row
+          body: Row( 
             children: [
               SafeArea(
                 child: NavigationRail(
@@ -137,6 +140,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 }
 
+/*
 class CheckoutPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -170,7 +174,10 @@ class CheckoutPage extends StatelessWidget {
 
   }
 }
+*/
 
+
+/*
 class DashboardPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -214,7 +221,7 @@ class DashboardPage extends StatelessWidget {
     );
   }
 }
-
+*/
 // ...
 
 class BigCard extends StatelessWidget {
