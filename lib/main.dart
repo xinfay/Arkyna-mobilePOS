@@ -4,8 +4,6 @@ import 'package:provider/provider.dart';
 import 'package:flutter_grid_button/flutter_grid_button.dart';
 import 'dart:collection';
 
-
-
 void main() {
   runApp(MyApp());
 }
@@ -21,7 +19,8 @@ class MyApp extends StatelessWidget {
         title: 'mobile_pos',
         theme: ThemeData(
           useMaterial3: true,
-          colorScheme: ColorScheme.fromSeed(seedColor: Color.fromRGBO(237, 249, 255, 1)),
+          colorScheme:
+              ColorScheme.fromSeed(seedColor: Color.fromRGBO(237, 249, 255, 1)),
         ),
         home: MyHomePage(),
       ),
@@ -36,7 +35,7 @@ class MyAppState extends ChangeNotifier {
   //   current = WordPair.random();
   //   notifyListeners();
   // }
-  
+
   // var favorites = <WordPair>[];
 
   // void toggleFavorite() {
@@ -53,7 +52,6 @@ class MyAppState extends ChangeNotifier {
 
   // currently using mock data to test
   List<String> inventory = [];
-
 }
 
 // ...
@@ -68,7 +66,6 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-
     Widget page;
     switch (selectedIndex) {
       case 0:
@@ -78,7 +75,7 @@ class _MyHomePageState extends State<MyHomePage> {
       case 2:
         page = Placeholder(); // Placeholder for the inventory page
       case 3:
-        page = Placeholder(); // Placeholder for the pos config page
+        page = DynamicGridPage(); // Placeholder for the pos config page
       case 4:
         page = CheckoutPage(); // Placeholder for the checkout page
       case 5:
@@ -87,59 +84,114 @@ class _MyHomePageState extends State<MyHomePage> {
         throw UnimplementedError('No widget for $selectedIndex');
     }
 
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        return Scaffold(
-          // make body a column that contains a text and a row
-          body: Row( 
-            children: [
-              SafeArea(
-                child: NavigationRail(
-                  extended: constraints.maxWidth >= 600,
-                  destinations: [
-                    NavigationRailDestination(
-                      icon: Icon(Icons.home),
-                      label: Text('Home'),
-                    ),
-                    NavigationRailDestination(
-                      icon: Icon(Icons.analytics),
-                      label: Text('Analytics'),
-                    ),
-                    NavigationRailDestination(
-                      icon: Icon(Icons.inventory),
-                      label: Text('Inventory'),
-                    ),
-                    NavigationRailDestination(
-                      icon: Icon(Icons.settings),
-                      label: Text('POS Config'),
-                    ),
-                    NavigationRailDestination(
-                      icon: Icon(Icons.local_grocery_store),
-                      label: Text('Checkout'),
-                    ),
-                    NavigationRailDestination(
-                      icon: Icon(Icons.assignment),
-                      label: Text('Transactions'),
-                    ),
-                  ],
-                  selectedIndex: selectedIndex,
-                  onDestinationSelected: (value) {
-                    setState(() {
-                      selectedIndex = value;
-                    });
-                  },
-                ),
+    return LayoutBuilder(builder: (context, constraints) {
+      return Scaffold(
+        // make body a column that contains a text and a row
+        body: Row(
+          children: [
+            SafeArea(
+              child: NavigationRail(
+                extended: constraints.maxWidth >= 600,
+                destinations: [
+                  NavigationRailDestination(
+                    icon: Icon(Icons.home),
+                    label: Text('Home'),
+                  ),
+                  NavigationRailDestination(
+                    icon: Icon(Icons.analytics),
+                    label: Text('Analytics'),
+                  ),
+                  NavigationRailDestination(
+                    icon: Icon(Icons.inventory),
+                    label: Text('Inventory'),
+                  ),
+                  NavigationRailDestination(
+                    icon: Icon(Icons.settings),
+                    label: Text('POS Config'),
+                  ),
+                  NavigationRailDestination(
+                    icon: Icon(Icons.local_grocery_store),
+                    label: Text('Checkout'),
+                  ),
+                  NavigationRailDestination(
+                    icon: Icon(Icons.assignment),
+                    label: Text('Transactions'),
+                  ),
+                ],
+                selectedIndex: selectedIndex,
+                onDestinationSelected: (value) {
+                  setState(() {
+                    selectedIndex = value;
+                  });
+                },
               ),
-              Expanded(
-                child: Container(
-                  color: Theme.of(context).colorScheme.primaryContainer,
-                  child: page,
-                ),
+            ),
+            Expanded(
+              child: Container(
+                color: Theme.of(context).colorScheme.primaryContainer,
+                child: page,
               ),
-            ],
+            ),
+          ],
+        ),
+      );
+    });
+  }
+}
+
+class DynamicGridPage extends StatelessWidget {
+  final List<String> buttonLabels = [
+    'Button 1',
+    'Button 2',
+    'Button 3',
+    'Button 4',
+    'Button 5',
+    'Button 6',
+    'Button 7',
+    'Button 8',
+    'Button 9',
+    'Button 10',
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Dynamic Grid Example'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: GridView.builder(
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 3, // Number of columns
+            crossAxisSpacing: 8.0, // Spacing between columns
+            mainAxisSpacing: 8.0, // Spacing between rows
           ),
-        );
-      }
+          itemCount: buttonLabels.length,
+          itemBuilder: (context, index) {
+            return ElevatedButton(
+              onPressed: () {
+                // Define button behavior here
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('You pressed ${buttonLabels[index]}'),
+                  ),
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blue, // Button color
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.zero, // Makes the button square
+                ),
+              ),
+              child: Text(
+                buttonLabels[index],
+                style: TextStyle(color: Colors.white),
+              ),
+            );
+          },
+        ),
+      ),
     );
   }
 }
@@ -284,26 +336,23 @@ class CheckoutPage extends StatelessWidget {
               ),
             ), */
 
-
-            Flexible(
-              flex: 7, // This takes 7/11 of the available space
-              child: Container(
-                color: const Color.fromARGB(255, 223, 240, 224),
+              Flexible(
+                flex: 7, // This takes 7/11 of the available space
+                child: Container(
+                  color: const Color.fromARGB(255, 223, 240, 224),
+                ),
               ),
-            ),
-            // Current Order panel
-            Flexible(
-              flex: 4, // This takes 4/11 of the available space
-              child: Container(
-                color: Colors.green,
+              // Current Order panel
+              Flexible(
+                flex: 4, // This takes 4/11 of the available space
+                child: Container(
+                  color: Colors.green,
+                ),
               ),
-            ),
-
             ],
           );
 
-
-        // experimenting with best way to display checkout
+          // experimenting with best way to display checkout
 
           /*
           return Padding(
@@ -380,7 +429,6 @@ class CheckoutPage extends StatelessWidget {
     );
   }
 }
-
 
 /*
 class DashboardPage extends StatelessWidget {
