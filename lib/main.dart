@@ -61,10 +61,21 @@ class _MyHomePageState extends State<MyHomePage> {
     Widget page;
     switch (selectedIndex) {
       case 0:
-        page = GeneratorPage();
+        page = DashboardPage();
         break;
       case 1:
-        page = FavoritesPage();
+        page = Placeholder(); // Placeholder for the analytics page
+      case 2:
+        page = Placeholder(); // Placeholder for the inventory page
+        break;
+      case 3:
+        page = Placeholder(); // Placeholder for the pos config page
+        break;
+      case 4:
+        page = CheckoutPage();
+        break;
+      case 5:
+        page = Placeholder(); // Placeholder for the transactions page
         break;
       default:
         throw UnimplementedError('No widget for $selectedIndex');
@@ -84,8 +95,24 @@ class _MyHomePageState extends State<MyHomePage> {
                       label: Text('Home'),
                     ),
                     NavigationRailDestination(
-                      icon: Icon(Icons.favorite),
-                      label: Text('Favorites'),
+                      icon: Icon(Icons.analytics),
+                      label: Text('Analytics'),
+                    ),
+                    NavigationRailDestination(
+                      icon: Icon(Icons.inventory),
+                      label: Text('Inventory'),
+                    ),
+                    NavigationRailDestination(
+                      icon: Icon(Icons.settings),
+                      label: Text('POS Config'),
+                    ),
+                    NavigationRailDestination(
+                      icon: Icon(Icons.local_grocery_store),
+                      label: Text('Checkout'),
+                    ),
+                    NavigationRailDestination(
+                      icon: Icon(Icons.assignment),
+                      label: Text('Transactions'),
                     ),
                   ],
                   selectedIndex: selectedIndex,
@@ -110,7 +137,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 }
 
-class FavoritesPage extends StatelessWidget {
+class CheckoutPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var appState = context.watch<MyAppState>();
@@ -144,7 +171,7 @@ class FavoritesPage extends StatelessWidget {
   }
 }
 
-class GeneratorPage extends StatelessWidget {
+class DashboardPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var appState = context.watch<MyAppState>();
