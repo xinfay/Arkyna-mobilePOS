@@ -1,6 +1,10 @@
 import 'package:english_words/english_words.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_grid_button/flutter_grid_button.dart';
+import 'dart:collection';
+
+
 
 void main() {
   runApp(MyApp());
@@ -76,7 +80,7 @@ class _MyHomePageState extends State<MyHomePage> {
       case 3:
         page = Placeholder(); // Placeholder for the pos config page
       case 4:
-        page = Placeholder(); // Placeholder for the checkout page
+        page = CheckoutPage(); // Placeholder for the checkout page
       case 5:
         page = Placeholder(); // Placeholder for the transactions page
       default:
@@ -175,6 +179,207 @@ class CheckoutPage extends StatelessWidget {
   }
 }
 */
+
+class CheckoutPage extends StatelessWidget {
+  final _focusNode = FocusNode(canRequestFocus: false, skipTraversal: true);
+
+  @override
+  Widget build(BuildContext context) {
+    const textStyle = TextStyle(fontSize: 26);
+    LinkedHashMap<String, int> cart = LinkedHashMap();
+
+    // would we import the menu options? read from csv/txt file?
+
+    // mock data for testing
+    cart.addAll({
+      'Cappuccino': 0,
+      'Latte': 1,
+      'Americano': 2,
+      'Espresso': 0,
+    });
+
+    return MaterialApp(
+      home: Scaffold(
+        appBar: AppBar(
+          title: const Text('Checkout', style: TextStyle(fontSize: 28)),
+        ),
+        body: Builder(builder: (context) {
+          return Row(
+            children: [
+              /*
+            Flexible(
+              flex: 7, // This takes 7/11 of the available space
+              child: Column(
+                children: [
+                  Container(
+                    color: Colors.red,
+                    child: GridButton(
+                      textStyle: textStyle,
+                      borderColor: Colors.grey[300],
+                      borderWidth: 2,
+                      onPressed: (dynamic val) {
+                        _focusNode.requestFocus();
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(val.toString()),
+                            duration: const Duration(milliseconds: 400),
+                          ),
+                        );
+                      },
+                      items: [
+                        /*
+                        [
+                          GridButtonItem(
+                            title: "Cappuccino",
+                            color: Colors.blue,
+                            textStyle: textStyle.copyWith(color: Colors.white),
+                          ),
+                          GridButtonItem(
+                            title: "Latte",
+                            color: Colors.green,
+                            textStyle: textStyle.copyWith(color: Colors.white),
+                          ),
+                        ],
+                        [
+                          GridButtonItem(
+                              child: const Icon(
+                                Icons.image_outlined,
+                                size: 50,
+                              ),
+                              focusNode: _focusNode,
+                              textStyle: textStyle.copyWith(color: Colors.white),
+                              value: 'image',
+                              color: Colors.blue,
+                              shape: const BorderSide(width: 4),
+                              borderRadius: 30)
+                        ],
+                        [
+                          const GridButtonItem(title: "7"),
+                          const GridButtonItem(title: "8"),
+                          const GridButtonItem(title: "9"),
+                          GridButtonItem(title: "×", color: Colors.grey[300]),
+                        ],
+                        [
+                          const GridButtonItem(title: "4"),
+                          const GridButtonItem(title: "5"),
+                          const GridButtonItem(title: "6"),
+                          GridButtonItem(title: "-", color: Colors.grey[300]),
+                        ], */
+                        [
+                          const GridButtonItem(title: "1"),
+                          const GridButtonItem(title: "2"),
+                          const GridButtonItem(title: "3"),
+                          GridButtonItem(title: "+", color: Colors.grey[300]),
+                        ],
+                        [
+                          const GridButtonItem(title: "0"),
+                          const GridButtonItem(
+                              title: "000", flex: 2, longPressValue: 400),
+                          GridButtonItem(title: "=", color: Colors.grey[300]),
+                        ],
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ), */
+
+
+            Flexible(
+              flex: 7, // This takes 7/11 of the available space
+              child: Container(
+                color: const Color.fromARGB(255, 223, 240, 224),
+              ),
+            ),
+            // Current Order panel
+            Flexible(
+              flex: 4, // This takes 4/11 of the available space
+              child: Container(
+                color: Colors.green,
+              ),
+            ),
+
+            ],
+          );
+
+
+        // experimenting with best way to display checkout
+
+          /*
+          return Padding(
+            padding: const EdgeInsets.all(18.0),
+            child: GridButton(
+              textStyle: textStyle,
+              borderColor: Colors.grey[300],
+              borderWidth: 2,
+              onPressed: (dynamic val) {
+                _focusNode.requestFocus();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(val.toString()),
+                    duration: const Duration(milliseconds: 400),
+                  ),
+                );
+              },
+              items: [
+                [
+                  GridButtonItem(
+                    title: "Black",
+                    color: Colors.black,
+                    textStyle: textStyle.copyWith(color: Colors.white),
+                  ),
+                  GridButtonItem(
+                    title: "Red",
+                    color: Colors.red,
+                    textStyle: textStyle.copyWith(color: Colors.white),
+                  ),
+                ],
+                [
+                  GridButtonItem(
+                      child: const Icon(
+                        Icons.image_outlined,
+                        size: 50,
+                      ),
+                      focusNode: _focusNode,
+                      textStyle: textStyle.copyWith(color: Colors.white),
+                      value: 'image',
+                      color: Colors.blue,
+                      shape: const BorderSide(width: 4),
+                      borderRadius: 30)
+                ],
+                [
+                  const GridButtonItem(title: "7"),
+                  const GridButtonItem(title: "8"),
+                  const GridButtonItem(title: "9"),
+                  GridButtonItem(title: "×", color: Colors.grey[300]),
+                ],
+                [
+                  const GridButtonItem(title: "4"),
+                  const GridButtonItem(title: "5"),
+                  const GridButtonItem(title: "6"),
+                  GridButtonItem(title: "-", color: Colors.grey[300]),
+                ],
+                [
+                  const GridButtonItem(title: "1"),
+                  const GridButtonItem(title: "2"),
+                  const GridButtonItem(title: "3"),
+                  GridButtonItem(title: "+", color: Colors.grey[300]),
+                ],
+                [
+                  const GridButtonItem(title: "0"),
+                  const GridButtonItem(
+                      title: "000", flex: 2, longPressValue: 400),
+                  GridButtonItem(title: "=", color: Colors.grey[300]),
+                ],
+              ],
+            ),
+          );
+          */
+        }),
+      ),
+    );
+  }
+}
 
 
 /*
