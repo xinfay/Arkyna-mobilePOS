@@ -33,8 +33,8 @@ class CheckoutPage extends StatelessWidget {
       'Espresso': 0,
     });
 
-          final cart_items = Provider.of<ShoppingCartList>(context).items;
-          print(cart_items);
+          final cartItems = Provider.of<ShoppingCartList>(context).items;
+          print(cartItems);
 
           return Row(
             children: [
@@ -94,7 +94,7 @@ class CheckoutPage extends StatelessWidget {
                     ),
                     Expanded(
                       
-                      child: cart_items.isEmpty
+                      child: cartItems.isEmpty
                         ? Center(
                           child: Column(
                           mainAxisSize: MainAxisSize.min,
@@ -115,16 +115,16 @@ class CheckoutPage extends StatelessWidget {
                           ),
                         )
                         : ListView.builder(
-                          itemCount: cart_items.length,
+                          itemCount: cartItems.length,
                           itemBuilder: (context, index) {
                           return ListTile(
-                            title: Text(cart_items[index]),
+                            title: Text(cartItems[index]),
                             trailing: IconButton(
                             icon: Icon(Icons.remove_circle_outline),
                             onPressed: () {
                               context
                                 .read<ShoppingCartList>()
-                                .remove(cart_items[index]);
+                                .remove(cartItems[index]);
                             },
                             ),
                           );

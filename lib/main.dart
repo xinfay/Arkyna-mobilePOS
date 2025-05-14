@@ -4,9 +4,9 @@ import 'package:provider/provider.dart';
 import 'dart:collection';
 
 void main() {
-  final shopping_cart_list = ShoppingCartList();
+  final shoppingCartList = ShoppingCartList();
 
-  runApp(ChangeNotifierProvider(create: (_) => shopping_cart_list, child: MyApp()));
+  runApp(ChangeNotifierProvider(create: (_) => shoppingCartList, child: MyApp()));
 }
 
 class MyApp extends StatelessWidget {
@@ -227,8 +227,8 @@ class CheckoutPage extends StatelessWidget {
       'Espresso': 0,
     });
 
-          final cart_items = context.watch<ShoppingCartList>().items;
-          print(cart_items);
+          final cartItems = context.watch<ShoppingCartList>().items;
+          print(cartItems);
 
           return Row(
             children: [
@@ -288,7 +288,7 @@ class CheckoutPage extends StatelessWidget {
                     ),
                     Expanded(
                       
-                      child: cart_items.isEmpty
+                      child: cartItems.isEmpty
                         ? Center(
                           child: Column(
                           mainAxisSize: MainAxisSize.min,
@@ -309,16 +309,16 @@ class CheckoutPage extends StatelessWidget {
                           ),
                         )
                         : ListView.builder(
-                          itemCount: cart_items.length,
+                          itemCount: cartItems.length,
                           itemBuilder: (context, index) {
                           return ListTile(
-                            title: Text(cart_items[index]),
+                            title: Text(cartItems[index]),
                             trailing: IconButton(
                             icon: Icon(Icons.remove_circle_outline),
                             onPressed: () {
                               context
                                 .read<ShoppingCartList>()
-                                .remove(cart_items[index]);
+                                .remove(cartItems[index]);
                             },
                             ),
                           );
