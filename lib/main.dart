@@ -46,6 +46,7 @@ class MyHomePage extends StatefulWidget {
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
+
 class ShoppingCartList extends ChangeNotifier {
   final List<String> _items = [];
   List<String> get items => List.unmodifiable(_items);
@@ -57,6 +58,11 @@ class ShoppingCartList extends ChangeNotifier {
 
   void remove(String item) {
     _items.remove(item);
+    notifyListeners();
+  }
+
+  void removeAll(String item) {
+    _items.removeWhere((i) => i == item);
     notifyListeners();
   }
 }
@@ -218,195 +224,237 @@ class InventoryPage extends StatelessWidget {
 
 class CheckoutPage extends StatelessWidget {
   final List<String> buttonLabels = [
-    'Button 1',
-    'Button 2',
-    'Button 3',
-    'Button 4',
-    'Button 5',
-    'Button 6',
-    'Button 7',
-    'Button 8',
-    'Button 9',
-    'Button 10',
+    'Cappuccino',
+    'Latte',
+    'Americano',
+    'Espresso',
+    'Mocha',
+    'Cold Brew',
+    'Croissant',
+    'Blueberry Muffin',
+    'Chocolate Chip Cookie',
+    'Chicken Sandwich',
+    'Caesar Salad',
+    'Fresh Fruit Cup',
+    'Water Bottle',
   ];
 
   @override
   Widget build(BuildContext context) {
+    final cart_items = context.watch<ShoppingCartList>().items;
+    print(cart_items);
 
-    LinkedHashMap<String, int> cart = LinkedHashMap();
-
-    // would we import the menu options? read from csv/txt file?
-
-    // mock data for testing
-    cart.addAll({
-      'Cappuccino': 0,
-      'Latte': 1,
-      'Americano': 2,
-      'Espresso': 0,
-    });
-
-          final cartItems = context.watch<ShoppingCartList>().items;
-          print(cartItems);
-
-          return Row(
-            children: [
-              Flexible(
-                flex: 7, // This takes 7/11 of the available space
-                child: GridView.builder(
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 3, // Number of columns
-                    crossAxisSpacing: 8.0, // Spacing between columns
-                    mainAxisSpacing: 8.0, // Spacing between rows
-                  ),
-                  itemCount: buttonLabels.length,
-                  itemBuilder: (context, index) {
-                    return ElevatedButton(
-                      onPressed: () {
-                        context.read<ShoppingCartList>().add("button $index");
-                        // Define button behavior here
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('You pressed ${buttonLabels[index]}'),
-                          ),
-                        );
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue, // Button color
-                        shape: RoundedRectangleBorder(
-                          borderRadius:
-                              BorderRadius.zero, // Makes the button square
-                        ),
-                      ),
-                      child: Text(
-                        buttonLabels[index],
-                        style: TextStyle(color: Colors.white),
-                      ),
-                    );
-                  },
-                ),
-                // child: Container(
-
-                //   color: const Color.fromARGB(255, 223, 240, 224),
-                // ),
-              ),
-              // Current Order panel
-              Flexible(
-                flex: 4, // This takes 4/11 of the available space
-                child: Column(
-                  children: [
-                    const Padding(
-                      padding: EdgeInsets.all(16.0),
-                      child: Align(
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          'No items in cart',
-                          style: TextStyle(color: Colors.grey),
-                        ),
-                      ),
+    return Row(
+      children: [
+        Flexible(
+          flex: 7, // This takes 7/11 of the available space
+          child: GridView.builder(
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 3, // Number of columns
+              crossAxisSpacing: 8.0, // Spacing between columns
+              mainAxisSpacing: 8.0, // Spacing between rows
+            ),
+            itemCount: buttonLabels.length,
+            itemBuilder: (context, index) {
+              return ElevatedButton(
+                onPressed: () {
+                  context.read<ShoppingCartList>().add(buttonLabels[index]);
+                  // Define button behavior here
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content:
+                          Text('You added ${buttonLabels[index]} to the cart'),
                     ),
-                    Expanded(
-                      
-                      child: cartItems.isEmpty
-                        ? Center(
-                          child: Column(
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color.fromARGB(255, 73, 158, 227), // Button color
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.zero, // Makes the button square
+                  ),
+                ),
+                child: Text(
+                  buttonLabels[index],
+                  style: TextStyle(fontSize: 17, color: Colors.white),
+                ),
+              );
+            },
+          ),
+          // child: Container(
+
+          //   color: const Color.fromARGB(255, 223, 240, 224),
+          // ),
+        ),
+        // Cart panel
+        Flexible(
+          flex: 4, // This takes 4/11 of the available space
+          child: Column(
+            children: [
+              Padding(
+                padding: EdgeInsets.all(16.0),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: cart_items.isEmpty
+                      ? Text(
+                          'No items in cart',
+                          style: TextStyle(fontSize: 18, color: Colors.grey),
+                        )
+                      : Text(
+                          'Cart',
+                          style: TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black87),
+                        ),
+                ),
+              ),
+              Expanded(
+                child: cart_items.isEmpty
+                    ? Center(
+                        child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: const [
                             Icon(Icons.receipt_long,
-                              size: 60, color: Colors.grey),
+                                size: 60, color: Colors.grey),
                             SizedBox(height: 10),
                             Text(
-                            'Your cart is empty',
-                            style: TextStyle(
-                              fontSize: 18, color: Colors.black54),
+                              'Your cart is empty',
+                              style: TextStyle(
+                                  fontSize: 18, color: Colors.black54),
                             ),
                             Text(
-                            'Add items from the menu',
-                            style: TextStyle(color: Colors.grey),
+                              'Add items from the menu',
+                              style: TextStyle(color: Colors.grey),
                             ),
                           ],
-                          ),
-                        )
-                        : ListView.builder(
-                          itemCount: cartItems.length,
-                          itemBuilder: (context, index) {
+                        ),
+                      )
+                    : ListView.builder(
+                        itemCount:
+                            cart_items.toSet().length, // Unique items only
+                        itemBuilder: (context, index) {
+                          final uniqueItems =
+                              cart_items.toSet().toList(); // Get unique items
+                          String item = uniqueItems[index];
+                          int itemCount =
+                              cart_items.where((i) => i == item).length;
+
                           return ListTile(
-                            title: Text(cartItems[index]),
-                            trailing: IconButton(
-                            icon: Icon(Icons.remove_circle_outline),
-                            onPressed: () {
-                              context
-                                .read<ShoppingCartList>()
-                                .remove(cartItems[index]);
-                            },
+                            title: Text(item),
+                            trailing: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                IconButton(
+                                  icon: Icon(Icons.remove_circle_outline),
+                                  onPressed: () {
+                                    context
+                                        .read<ShoppingCartList>()
+                                        .remove(item);
+                                  },
+                                ),
+                                Text(
+                                  '$itemCount',
+                                  style: TextStyle(fontSize: 16),
+                                ),
+                                IconButton(
+                                  icon: Icon(Icons.add_circle_outline),
+                                  onPressed: () {
+                                    context.read<ShoppingCartList>().add(item);
+                                  },
+                                ),
+                                IconButton(
+                                  icon: Icon(Icons.delete),
+                                  onPressed: () {
+                                    context
+                                        .read<ShoppingCartList>()
+                                        .removeAll(item);
+                                  },
+                                ),
+                              ],
                             ),
                           );
-                          },
+                        },
+                      ),
+              ),
+              const Divider(height: 1),
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                child: Column(
+                  children: [
+                    _buildPriceRow('Subtotal', '\$0.00'),
+                    _buildPriceRow('Tax (7.25%)', '\$0.00'),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: const [
+                        Icon(Icons.local_offer_outlined, color: Colors.black54),
+                        SizedBox(width: 8),
+                        Text(
+                          'Add Discount',
+                          style: TextStyle(
+                              color: Colors.black87,
+                              fontWeight: FontWeight.w500),
                         ),
+                      ],
                     ),
-                    const Divider(height: 1),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 20, vertical: 8),
-                      child: Column(
-                        children: [
-                          _buildPriceRow('Subtotal', '\$0.00'),
-                          _buildPriceRow('Tax (7.25%)', '\$0.00'),
-                          const SizedBox(height: 8),
-                          Row(
-                            children: const [
-                              Icon(Icons.local_offer_outlined,
-                                  color: Colors.black54),
-                              SizedBox(width: 8),
-                              Text(
-                                'Add Discount',
-                                style: TextStyle(
-                                    color: Colors.black87,
-                                    fontWeight: FontWeight.w500),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                    const Divider(height: 1),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 20, vertical: 12),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: const [
-                          Text('Total',
-                              style: TextStyle(
-                                  fontSize: 18, fontWeight: FontWeight.bold)),
-                          Text('\$0.00',
-                              style: TextStyle(
-                                  fontSize: 18, fontWeight: FontWeight.bold)),
-                        ],
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(20),
-                      child: SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton.icon(
+                  ],
+                ),
+              ),
+              const Divider(height: 1),
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: const [
+                    Text('Total',
+                        style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold)),
+                    Text('\$0.00',
+                        style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold)),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(20),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: cart_items.isEmpty
+                      ? ElevatedButton.icon(
                           onPressed: null,
                           icon: const Icon(Icons.shopping_cart_checkout),
                           label: const Text('Checkout'),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.grey.shade400,
                             foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            padding:
+                                const EdgeInsets.symmetric(vertical: 16),
                             disabledBackgroundColor: Colors.grey.shade400,
                           ),
-                        ),
-                      ),
+                        )
+                      : ElevatedButton.icon(
+                    onPressed: () {
+                      // Checkout functionality here
+                    },
+                    icon: const Icon(Icons.shopping_cart_checkout),
+                    label: const Text('Checkout'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor:
+                          const Color.fromARGB(255, 27, 126, 207),
+                      foregroundColor: Colors.white,
+                      padding:
+                          const EdgeInsets.symmetric(vertical: 16),
                     ),
-                  ],
+                  ),
+
                 ),
               ),
             ],
-          );
-
+          ),
+        ),
+      ],
+    );
   }
 
   static Widget _buildPriceRow(String label, String amount) {
