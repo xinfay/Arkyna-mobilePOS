@@ -1,4 +1,3 @@
-import 'package:english_words/english_words.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'dart:collection';
@@ -62,81 +61,100 @@ class ShoppingCartList extends ChangeNotifier {
   }
 }
 
+
+// ------
 class _MyHomePageState extends State<MyHomePage> {
+
   var selectedIndex = 0;
 
   @override
   Widget build(BuildContext context) {
-    Widget page;
+
+    Widget page = Placeholder();
     switch (selectedIndex) {
       case 0:
-        page = Placeholder(); // Placeholder for the dashboard page
+        page = Placeholder();
       case 1:
-        page = Placeholder(); // Placeholder for the analytics page
+        page = Placeholder();
       case 2:
-        page = InventoryPage(); // Placeholder for the inventory page
+        page = InventoryPage();
       case 3:
-        page = Placeholder(); // Placeholder for the pos config page
+        page = Placeholder();
       case 4:
-        page = CheckoutPage(); // Placeholder for the checkout page
+        page = CheckoutPage();
       case 5:
-        page = Placeholder(); // Placeholder for the transactions page
-      default:
-        throw UnimplementedError('No widget for $selectedIndex');
+        page = Placeholder();
     }
 
-    return LayoutBuilder(builder: (context, constraints) {
-      return Scaffold(
-        // make body a column that contains a text and a row
-        body: Row(
-          children: [
-            SafeArea(
-              child: NavigationRail(
-                extended: constraints.maxWidth >= 600,
-                destinations: [
-                  NavigationRailDestination(
-                    icon: Icon(Icons.home),
-                    label: Text('Home'),
-                  ),
-                  NavigationRailDestination(
-                    icon: Icon(Icons.analytics),
-                    label: Text('Analytics'),
-                  ),
-                  NavigationRailDestination(
-                    icon: Icon(Icons.inventory),
-                    label: Text('Inventory'),
-                  ),
-                  NavigationRailDestination(
-                    icon: Icon(Icons.settings),
-                    label: Text('POS Config'),
-                  ),
-                  NavigationRailDestination(
-                    icon: Icon(Icons.local_grocery_store),
-                    label: Text('Checkout'),
-                  ),
-                  NavigationRailDestination(
-                    icon: Icon(Icons.assignment),
-                    label: Text('Transactions'),
-                  ),
-                ],
-                selectedIndex: selectedIndex,
-                onDestinationSelected: (value) {
-                  setState(() {
-                    selectedIndex = value;
-                  });
-                },
+    return Scaffold(
+      body: Row(
+        children: [
+          SafeArea(
+            child: NavigationRail(
+              extended: true,
+              indicatorColor: Colors.blueGrey[100],
+              indicatorShape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
               ),
-            ),
-            Expanded(
-              child: Container(
-                color: Theme.of(context).colorScheme.primaryContainer,
-                child: page,
+              minExtendedWidth: 200,
+
+
+              leading: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Text(
+                  'mobilePOS',
+                  style: TextStyle(
+                    fontSize: 28,
+                    fontWeight:  FontWeight.bold,
+                    fontStyle: FontStyle.italic,
+                    letterSpacing: 1.5,
+                  )
+                ),
               ),
+
+              destinations: [
+                NavigationRailDestination(
+                  icon: Icon(Icons.house_siding),
+                  label: Text('Dashboard'),
+                ),
+                NavigationRailDestination(
+                  icon: Icon(Icons.analytics_outlined),
+                  label: Text('Analytics'),
+                ),
+                NavigationRailDestination(
+                  icon: Icon(Icons.inventory_2_outlined),
+                  label: Text('Inventory'),
+                ),
+                NavigationRailDestination(
+                  icon: Icon(Icons.settings_applications_sharp),
+                  label: Text('Configurations'),
+                ),
+                NavigationRailDestination(
+                  icon: Icon(Icons.shopping_cart_outlined),
+                  label: Text('Checkout'),
+                ),
+                NavigationRailDestination(
+                  icon: Icon(Icons.content_paste_go_sharp),
+                  label: Text('Transactions'),
+                ),
+              ],
+              selectedIndex: selectedIndex,
+              onDestinationSelected: (value) {
+                setState(() {
+                  selectedIndex = value;
+                });
+              },
             ),
-          ],
-        ),
-      );
-    });
+          ),
+          Expanded(
+            child: Container(
+              color: Theme.of(context).colorScheme.primaryContainer,
+              child: page,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 
