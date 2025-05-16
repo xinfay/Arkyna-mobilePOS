@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'dart:collection';
 
 void main() {
   final shoppingCartList = ShoppingCartList();
 
-  runApp(ChangeNotifierProvider(create: (_) => shoppingCartList, child: MyApp()));
+  runApp(
+      ChangeNotifierProvider(create: (_) => shoppingCartList, child: MyApp()));
 }
 
 class MyApp extends StatelessWidget {
@@ -46,7 +46,6 @@ class MyHomePage extends StatefulWidget {
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
-
 class ShoppingCartList extends ChangeNotifier {
   final List<String> _items = [];
   List<String> get items => List.unmodifiable(_items);
@@ -67,14 +66,11 @@ class ShoppingCartList extends ChangeNotifier {
   }
 }
 
-
 class _MyHomePageState extends State<MyHomePage> {
-
   var selectedIndex = 0;
 
   @override
   Widget build(BuildContext context) {
-
     Widget page = Placeholder();
     switch (selectedIndex) {
       case 0:
@@ -102,21 +98,16 @@ class _MyHomePageState extends State<MyHomePage> {
                 borderRadius: BorderRadius.circular(8),
               ),
               minExtendedWidth: 200,
-
-
               leading: Padding(
                 padding: const EdgeInsets.all(16),
-                child: Text(
-                  'mobilePOS',
-                  style: TextStyle(
-                    fontSize: 28,
-                    fontWeight:  FontWeight.bold,
-                    fontStyle: FontStyle.italic,
-                    letterSpacing: 1.5,
-                  )
-                ),
+                child: Text('mobilePOS',
+                    style: TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                      fontStyle: FontStyle.italic,
+                      letterSpacing: 1.5,
+                    )),
               ),
-
               destinations: [
                 NavigationRailDestination(
                   icon: Icon(Icons.house_siding),
@@ -220,6 +211,19 @@ class InventoryPage extends StatelessWidget {
   }
 }
 
+class CheckoutItem {
+  String? name;
+  //int quantity;
+  double? price;
+  String? description;
+
+  CheckoutItem(
+    this.name,
+    this.price,
+    this.description,
+  );
+}
+
 class CheckoutPage extends StatefulWidget {
   @override
   _CheckoutPageState createState() => _CheckoutPageState();
@@ -227,21 +231,103 @@ class CheckoutPage extends StatefulWidget {
 
 class _CheckoutPageState extends State<CheckoutPage> {
   var checkoutState = 0;
+  final double taxRate = 0.0725;
+  double subtotal = 0.0;
 
-  final List<String> buttonLabels = [
-    'Cappuccino',
-    'Latte',
-    'Americano',
-    'Espresso',
-    'Mocha',
-    'Cold Brew',
-    'Croissant',
-    'Blueberry Muffin',
-    'Chocolate Chip Cookie',
-    'Chicken Sandwich',
-    'Caesar Salad',
-    'Fresh Fruit Cup',
-    'Water Bottle',
+  double _calculateSubtotal(List<String> cart_items) {
+    double subtotal = 0.0;
+    for (var item in cart_items) {
+      final price = buttonLabels.firstWhere((e) => e.name == item).price ?? 0.0;
+      subtotal += price;
+    }
+    return subtotal;
+  }
+
+  final List<CheckoutItem> buttonLabels = [
+    CheckoutItem(
+      'Cappuccino',
+      4.50,
+      'A classic cappuccino with espresso, steamed milk, and foam.',
+    ),
+
+    CheckoutItem(
+      'Latte',
+      4.00,
+      'A smooth latte with espresso and steamed milk.',
+    ),
+
+    CheckoutItem(
+      'Americano',
+      3.50,
+      'A strong Americano with espresso and hot water.',
+    ),
+
+    CheckoutItem(
+      'Mocha',
+      4.75,
+      'A rich mocha with espresso, steamed milk, and chocolate.',
+    ),
+
+    CheckoutItem(
+      'Cold Brew',
+      3.00,
+      'A refreshing cold brew coffee served over ice.',
+    ),
+
+    CheckoutItem(
+      'Croissant',
+      2.50,
+      'A buttery croissant, perfect for breakfast.',
+    ),
+
+    CheckoutItem(
+      'Blueberry Muffin',
+      2.75,
+      'A delicious blueberry muffin, fresh from the oven.',
+    ),
+
+    CheckoutItem(
+      'Chocolate Chip Cookie',
+      1.50,
+      'A classic chocolate chip cookie, warm and gooey.',
+    ),
+
+    CheckoutItem(
+      'Chicken Sandwich',
+      5.00,
+      'A grilled chicken sandwich with lettuce and tomato.',
+    ),
+
+    CheckoutItem(
+      'Caesar Salad',
+      4.50,
+      'A fresh Caesar salad with romaine lettuce and croutons.',
+    ),
+
+    CheckoutItem(
+      'Fresh Fruit Cup',
+      0.50,
+      'A refreshing cup of mixed seasonal fruits.',
+    ),
+
+    CheckoutItem(
+      'Water Bottle',
+      1.00,
+      'A bottle of refreshing water.',
+    ),
+
+    // 'Latte',
+    // 'Americano',
+    // 'Espresso',
+    // 'Mocha',
+    // 'Cold Brew',
+    // 'Croissant',
+    // 'Blueberry Muffin',
+    // 'Chocolate Chip Cookie',
+    // 'Chicken Sandwich',
+    // 'Caesar Salad',
+    // 'Fresh Fruit Cup',
+    // 'Water Bottle',
   ];
 
   void _checkoutHelper(var toggle) {
@@ -269,10 +355,15 @@ class _CheckoutPageState extends State<CheckoutPage> {
             itemBuilder: (context, index) {
               return ElevatedButton(
                 onPressed: () {
-                  context.read<ShoppingCartList>().add(buttonLabels[index]);
+                  context
+                      .read<ShoppingCartList>()
+                      .add(buttonLabels[index].name!);
+                  subtotal += buttonLabels[index].price!;
+
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text('You added ${buttonLabels[index]} to the cart'),
+                      content: Text(
+                          'You added ${buttonLabels[index].name} to the cart'),
                     ),
                   );
                 },
@@ -283,7 +374,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
                   ),
                 ),
                 child: Text(
-                  buttonLabels[index],
+                  buttonLabels[index].name!,
                   style: TextStyle(fontSize: 17, color: Colors.white),
                 ),
               );
@@ -314,6 +405,9 @@ class _CheckoutPageState extends State<CheckoutPage> {
 }
 
   Widget _buildCartPanel(List<String> cart_items) {
+    final subtotal = _calculateSubtotal(cart_items);
+    final tax = subtotal * taxRate;
+    final total = subtotal + tax;
     return Column(
       children: [
         Padding(
@@ -344,7 +438,8 @@ class _CheckoutPageState extends State<CheckoutPage> {
                       Icon(Icons.receipt_long, size: 60, color: Colors.grey),
                       SizedBox(height: 10),
                       Text('Your cart is empty',
-                          style: TextStyle(fontSize: 18, color: Colors.black54)),
+                          style:
+                              TextStyle(fontSize: 18, color: Colors.black54)),
                       Text('Add items from the menu',
                           style: TextStyle(color: Colors.grey)),
                     ],
@@ -355,18 +450,35 @@ class _CheckoutPageState extends State<CheckoutPage> {
                   itemBuilder: (context, index) {
                     final uniqueItems = cart_items.toSet().toList();
                     String item = uniqueItems[index];
-                    int itemCount =
-                        cart_items.where((i) => i == item).length;
+                    int itemCount = cart_items.where((i) => i == item).length;
 
                     return ListTile(
                       title: Text(item),
+                      subtitle: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+
+                        // keep both numbers or only the total?
+                        children: [
+                          Text(
+                            '\$${buttonLabels.firstWhere((e) => e.name == item).price?.toStringAsFixed(2) ?? '0.00'}',
+                            style:
+                                TextStyle(fontSize: 15, color: Colors.black38),
+                          ),
+                          Text(
+                            'Total: \$${((buttonLabels.firstWhere((e) => e.name == item).price ?? 0) * itemCount).toStringAsFixed(2)}',
+                            style:
+                                TextStyle(fontSize: 14, color: Colors.black54),
+                          ),
+                        ],
+                      ),
                       trailing: Row(
                         mainAxisSize: MainAxisSize.min,
-                          children: [
-                            IconButton(
+                        children: [
+                          IconButton(
                             icon: Icon(Icons.remove_circle_outline),
-                             onPressed: () {
+                            onPressed: () {
                               context.read<ShoppingCartList>().remove(item);
+                              //subtotal -= buttonLabels[index].price!;
                             },
                           ),
                           Text('$itemCount', style: TextStyle(fontSize: 16)),
@@ -374,27 +486,32 @@ class _CheckoutPageState extends State<CheckoutPage> {
                             icon: Icon(Icons.add_circle_outline),
                             onPressed: () {
                               context.read<ShoppingCartList>().add(item);
+                              //subtotal += buttonLabels[index].price!;
                             },
                           ),
                           IconButton(
                             icon: Icon(Icons.delete),
                             onPressed: () {
                               context.read<ShoppingCartList>().removeAll(item);
-                              },
+                              //subtotal -=
+                              itemCount * buttonLabels[index].price!;
+                            },
                           ),
                         ],
                       ),
                     );
                   },
                 ),
-              ),
+        ),
         const Divider(height: 1),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
           child: Column(
             children: [
-              _buildPriceRow('Subtotal', '\$0.00'),
-              _buildPriceRow('Tax (7.25%)', '\$0.00'),
+              _buildPriceRow('Subtotal',
+                  '\$${subtotal.toStringAsFixed(2)}'), // TODO: adjust subtotal
+              _buildPriceRow('Tax (7.25%)',
+                  '\$${(subtotal * taxRate).toStringAsFixed(2)}'), //TODO: adjust tax total
               const SizedBox(height: 8),
               Row(
                 children: const [
@@ -412,17 +529,28 @@ class _CheckoutPageState extends State<CheckoutPage> {
         ),
         const Divider(height: 1),
         Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: const [
-              Text('Total',
-                  style:
-                      TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              Text('\$0.00',
-                  style:
-                      TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            ],
+            children: cart_items.isEmpty
+                ? const [
+                    Text('Total',
+                        style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold)),
+                    Text('\$0.00',
+                        style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold)),
+                  ]
+                : [
+                    Text('Total',
+                        style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold)),
+                    //TODO: adjust total
+                    Text(
+                        '\$${total.toStringAsFixed(2)}',
+                        style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold)),
+                  ],
           ),
         ),
         Padding(
@@ -448,8 +576,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
                     icon: const Icon(Icons.shopping_cart_checkout),
                     label: const Text('Checkout'),
                     style: ElevatedButton.styleFrom(
-                        backgroundColor:
-                           const Color.fromARGB(255, 27, 126, 207),
+                      backgroundColor: const Color.fromARGB(255, 27, 126, 207),
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                     ),

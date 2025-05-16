@@ -1,5 +1,3 @@
-import 'dart:collection';
-
 import 'package:flutter/material.dart';
 import 'package:mobile_pos/models/shopping_cart_list.dart';
 import 'package:provider/provider.dart';
