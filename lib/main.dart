@@ -231,7 +231,7 @@ class CheckoutPage extends StatefulWidget {
 
 class _CheckoutPageState extends State<CheckoutPage> {
   var checkoutState = 0;
-  final double taxRate = 0.0725;
+  final double taxRate = 0.13;
   double subtotal = 0.0;
 
   double _calculateSubtotal(List<String> cart_items) {
@@ -396,7 +396,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
     case 0:
       return _buildCartPanel(cartItems);
     case 1:
-      return _buildPaymentOption();
+      return _buildPaymentOption(cartItems);
     case 2:
       return _buildPaymentConfirm();
     default:
@@ -404,7 +404,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
   }
 }
 
-  Widget _buildCartPanel(List<String> cart_items) {
+  Widget _buildCartPanel(List<String> cart_items, ) {
     final subtotal = _calculateSubtotal(cart_items);
     final tax = subtotal * taxRate;
     final total = subtotal + tax;
@@ -509,9 +509,9 @@ class _CheckoutPageState extends State<CheckoutPage> {
           child: Column(
             children: [
               _buildPriceRow('Subtotal',
-                  '\$${subtotal.toStringAsFixed(2)}'), // TODO: adjust subtotal
-              _buildPriceRow('Tax (7.25%)',
-                  '\$${(subtotal * taxRate).toStringAsFixed(2)}'), //TODO: adjust tax total
+                  '\$${subtotal.toStringAsFixed(2)}'),
+              _buildPriceRow('Tax (${(taxRate * 100).toStringAsFixed(2)}%)',
+                '\$${(subtotal * taxRate).toStringAsFixed(2)}'),
               const SizedBox(height: 8),
               Row(
                 children: const [
@@ -587,36 +587,48 @@ class _CheckoutPageState extends State<CheckoutPage> {
     );
   }
 
-  Widget _paymentButton(IconData icon, String label, {bool isSelected = false}) {
-  return Container(
-    width: 140,
-    height: 60,
-    decoration: BoxDecoration(
-      color: isSelected ? Colors.black : Colors.white,
-      border: Border.all(color: Colors.grey.shade300),
-      borderRadius: BorderRadius.circular(8),
-    ),
-    child: Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Icon(icon, color: isSelected ? Colors.white : Colors.black),
-        SizedBox(width: 8),
-        Text(label, style: TextStyle(color: isSelected ? Colors.white : Colors.black)),
-      ],
-    ),
-  );
-}
+  Widget _paymentButton(IconData icon, String label, {bool isSelected = false, VoidCallback? onTap}) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: isSelected ? Colors.black : Colors.white,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: Colors.black),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, color: isSelected ? Colors.white : Colors.black),
+            SizedBox(width: 8),
+            Text(label, style: TextStyle(color: isSelected ? Colors.white : Colors.black)),
+          ],
+        ),
+      ),
+    );
+  }
 
-Widget _buildInputField(String label, {bool obscure = false, String? hint}) {
+Widget _buildInputField(
+  String label, {
+  bool obscure = false,
+  String? hint,
+  String? prefixText,
+  TextEditingController? controller,
+  TextInputType keyboardType = TextInputType.text,
+}) {
   return Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
       Text(label),
       SizedBox(height: 4),
       TextField(
+        controller: controller,
         obscureText: obscure,
+        keyboardType: keyboardType,
         decoration: InputDecoration(
           hintText: hint,
+          prefixText: prefixText,
           border: OutlineInputBorder(),
           contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         ),
@@ -625,7 +637,76 @@ Widget _buildInputField(String label, {bool obscure = false, String? hint}) {
   );
 }
 
-  Widget _buildPaymentOption() {
+  int _selectedPaymentIndex = 0;
+  late TextEditingController _cardNumberController;
+  late TextEditingController _expController;
+  late TextEditingController _cvvController;
+  late TextEditingController _zipController;
+  late TextEditingController _cashInputController;
+
+  String? _cashError;
+  double? _cashChange;
+
+  void _setPaymentMethod(int index) {
+    setState(() {
+      _selectedPaymentIndex = index;
+    });
+  }
+
+  void _processPayment(double total) {
+  if (_selectedPaymentIndex == 2) {
+    final cash = double.tryParse(_cashInputController.text) ?? 0.0;
+    if (cash < total) {
+      setState(() {
+        _cashError = 'Insufficient cash provided.';
+        _cashChange = null;
+      });
+    } else {
+      setState(() {
+        _cashError = null;
+        _cashChange = cash - total;
+      });
+      _checkoutHelper(2);
+    }
+  } else {
+    // validate other methods here as needed
+    _checkoutHelper(2);
+  }
+}
+
+void _handleExternalService(String serviceName) {
+  // Placeholder: In a real app, this would initiate an SDK or redirect flow
+  print('Redirecting to $serviceName...');
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(content: Text('Redirecting to $serviceName...')),
+  );
+}
+
+@override
+void initState() {
+  super.initState();
+  _cardNumberController = TextEditingController();
+  _expController = TextEditingController();
+  _cvvController = TextEditingController();
+  _zipController = TextEditingController();
+  _cashInputController = TextEditingController();
+}
+
+@override
+void dispose() {
+  _cardNumberController.dispose();
+  _expController.dispose();
+  _cvvController.dispose();
+  _zipController.dispose();
+  _cashInputController.dispose();
+  super.dispose();
+}
+
+  Widget _buildPaymentOption(cartItems) {
+    final subtotal = _calculateSubtotal(cartItems);
+    final tax = subtotal * taxRate;
+    final total = subtotal + tax;
+
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Column(
@@ -635,7 +716,6 @@ Widget _buildInputField(String label, {bool obscure = false, String? hint}) {
           Text('Payment', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
           SizedBox(height: 4),
           Text('Select payment method', style: TextStyle(fontSize: 16, color: Colors.grey)),
-
           SizedBox(height: 16),
 
           // Payment method buttons
@@ -643,40 +723,91 @@ Widget _buildInputField(String label, {bool obscure = false, String? hint}) {
             spacing: 16,
             runSpacing: 16,
             children: [
-              _paymentButton(Icons.credit_card, 'Card', isSelected: true),
-              _paymentButton(Icons.attach_money, 'Cash'),
-              _paymentButton(Icons.card_giftcard, 'Gift Card'),
-              _paymentButton(Icons.share, 'Other'),
+              _paymentButton(Icons.credit_card, 'Credit Card', isSelected: _selectedPaymentIndex == 0, onTap: () => _setPaymentMethod(0)),
+              _paymentButton(Icons.credit_card, 'Debit Card', isSelected: _selectedPaymentIndex == 1, onTap: () => _setPaymentMethod(1)),
+              _paymentButton(Icons.attach_money, 'Cash', isSelected: _selectedPaymentIndex == 2, onTap: () => _setPaymentMethod(2)),
+              _paymentButton(Icons.share, 'Other', isSelected: _selectedPaymentIndex == 3, onTap: () => _setPaymentMethod(3)),
             ],
           ),
-
           SizedBox(height: 24),
 
-          // Card Payment Form
-          Text('Card Payment', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-          SizedBox(height: 12),
-          _buildInputField('Card Number', obscure: true),
-          SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(child: _buildInputField('Expiration Date', hint: 'MM/YY')),
-              SizedBox(width: 12),
-              Expanded(child: _buildInputField('CVV', obscure: true)),
-            ],
-          ),
-          SizedBox(height: 12),
-          _buildInputField('ZIP Code', hint: '12345'),
-          SizedBox(height: 8),
-          Text('Payments processed securely through Square', style: TextStyle(color: Colors.grey)),
+          // Credit Card
+          if (_selectedPaymentIndex == 0) ...[
+            Text('Credit Card', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            SizedBox(height: 12),
+            _buildInputField('Card Number', controller: _cardNumberController),
+            SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(child: _buildInputField('Expiration Date', hint: 'MM/YY', controller: _expController)),
+                SizedBox(width: 12),
+                Expanded(child: _buildInputField('CVV', controller: _cvvController)),
+              ],
+            ),
+            SizedBox(height: 8),
+            Text('No ZIP required. Secure processing.', style: TextStyle(color: Colors.grey)),
+          ],
+
+          // Debit Card
+          if (_selectedPaymentIndex == 1) ...[
+            Text('Debit Card', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            SizedBox(height: 12),
+            _buildInputField('Card Number', controller: _cardNumberController),
+            SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(child: _buildInputField('Expiration Date', hint: 'MM/YY', controller: _expController)),
+                SizedBox(width: 12),
+                Expanded(child: _buildInputField('CVV', controller: _cvvController)),
+              ],
+            ),
+            SizedBox(height: 12),
+            _buildInputField('ZIP Code', hint: '12345', controller: _zipController),
+          ],
+
+          // Cash
+          if (_selectedPaymentIndex == 2) ...[
+            Text('Cash Payment', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            SizedBox(height: 12),
+            _buildInputField('Enter Cash Received', prefixText: '\$', controller: _cashInputController, keyboardType: TextInputType.number),
+            if (_cashError != null) Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: Text(_cashError!, style: TextStyle(color: Colors.red)),
+            ),
+            SizedBox(height: 12),
+            if (_cashChange != null)
+              Text('Change: \$${_cashChange!.toStringAsFixed(2)}', style: TextStyle(fontWeight: FontWeight.bold)),
+          ],
+
+          // Other
+          if (_selectedPaymentIndex == 3) ...[
+            Text('Other Payment Methods', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            SizedBox(height: 12),
+            Wrap(
+              spacing: 12,
+              children: [
+                ElevatedButton.icon(
+                  onPressed: () => _handleExternalService('PayPal'),
+                  icon: Icon(Icons.account_balance_wallet),
+                  label: Text('PayPal'),
+                ),
+                ElevatedButton.icon(
+                  onPressed: () => _handleExternalService('Venmo'),
+                  icon: Icon(Icons.send),
+                  label: Text('Venmo'),
+                ),
+              ],
+            )
+          ],
 
           Spacer(),
 
-          // Total and buttons
+          // Total and Buttons
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text('Total', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-              Text('\$17.50', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+              Text('\$${total.toStringAsFixed(2)}', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
             ],
           ),
           SizedBox(height: 12),
@@ -684,7 +815,7 @@ Widget _buildInputField(String label, {bool obscure = false, String? hint}) {
             children: [
               Expanded(
                 child: OutlinedButton(
-                  onPressed: () {},
+                  onPressed: () => _checkoutHelper(0),
                   child: Text('Cancel'),
                 ),
               ),
@@ -692,10 +823,7 @@ Widget _buildInputField(String label, {bool obscure = false, String? hint}) {
               Expanded(
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(backgroundColor: Colors.black),
-                  onPressed: () {
-                    // Complete the sale
-                    _checkoutHelper(2); // Go to confirmation page
-                  },
+                  onPressed: () => _processPayment(total),
                   child: Text('Complete Sale'),
                 ),
               ),
