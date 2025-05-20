@@ -249,85 +249,66 @@ class _CheckoutPageState extends State<CheckoutPage> {
       4.50,
       'A classic cappuccino with espresso, steamed milk, and foam.',
     ),
-
     CheckoutItem(
       'Latte',
       4.00,
       'A smooth latte with espresso and steamed milk.',
     ),
-
     CheckoutItem(
       'Americano',
       3.50,
       'A strong Americano with espresso and hot water.',
     ),
-
     CheckoutItem(
       'Mocha',
       4.75,
       'A rich mocha with espresso, steamed milk, and chocolate.',
     ),
-
     CheckoutItem(
       'Cold Brew',
       3.00,
       'A refreshing cold brew coffee served over ice.',
     ),
-
     CheckoutItem(
       'Croissant',
       2.50,
       'A buttery croissant, perfect for breakfast.',
     ),
-
     CheckoutItem(
       'Blueberry Muffin',
       2.75,
       'A delicious blueberry muffin, fresh from the oven.',
     ),
-
     CheckoutItem(
       'Chocolate Chip Cookie',
       1.50,
       'A classic chocolate chip cookie, warm and gooey.',
     ),
-
     CheckoutItem(
       'Chicken Sandwich',
       5.00,
       'A grilled chicken sandwich with lettuce and tomato.',
     ),
-
     CheckoutItem(
       'Caesar Salad',
       4.50,
       'A fresh Caesar salad with romaine lettuce and croutons.',
     ),
-
     CheckoutItem(
       'Fresh Fruit Cup',
       0.50,
       'A refreshing cup of mixed seasonal fruits.',
     ),
-
     CheckoutItem(
       'Water Bottle',
       1.00,
       'A bottle of refreshing water.',
     ),
-
-    // 'Latte',
-    // 'Americano',
-    // 'Espresso',
-    // 'Mocha',
-    // 'Cold Brew',
-    // 'Croissant',
-    // 'Blueberry Muffin',
-    // 'Chocolate Chip Cookie',
-    // 'Chicken Sandwich',
-    // 'Caesar Salad',
-    // 'Fresh Fruit Cup',
-    // 'Water Bottle',
+    CheckoutItem(
+      'Add Item',
+      0.00,
+      'Add a new item to the menu.',
+    )
   ];
 
   void _checkoutHelper(var toggle) {
@@ -353,31 +334,163 @@ class _CheckoutPageState extends State<CheckoutPage> {
             ),
             itemCount: buttonLabels.length,
             itemBuilder: (context, index) {
-              return ElevatedButton(
-                onPressed: () {
-                  context
-                      .read<ShoppingCartList>()
-                      .add(buttonLabels[index].name!);
-                  subtotal += buttonLabels[index].price!;
+              // Check if the button is "Add Item"
+              if (buttonLabels[index].name == 'Add Item') {
+                return ElevatedButton(
+                  onPressed: () async {
+                    String? newName;
+                    String? newDescription;
+                    double? newPrice;
 
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                          'You added ${buttonLabels[index].name} to the cart'),
+                    final nameController = TextEditingController();
+                    final priceController = TextEditingController();
+                    final descController = TextEditingController();
+
+                    await showDialog(
+                      context: context,
+                      builder: (context) {
+                        return AlertDialog(
+                          title: Text('Add New Item'),
+                          content: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              TextField(
+                                controller: nameController,
+                                decoration: InputDecoration(labelText: 'Name'),
+                              ),
+                              TextField(
+                                controller: priceController,
+                                decoration: InputDecoration(labelText: 'Price', prefixText: '\$'),
+                                keyboardType: TextInputType.numberWithOptions(
+                                    decimal: true),
+                              ),
+                              TextField(
+                                controller: descController,
+                                decoration:
+                                    InputDecoration(labelText: 'Description'),
+                              ),
+                            ],
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                              },
+                              child: Text('Cancel'),
+                            ),
+                            ElevatedButton(
+                              onPressed: () {
+                                newName = nameController.text;
+                                newDescription = descController.text;
+                                newPrice =
+                                    double.tryParse(priceController.text);
+
+                                if (newName == null || newName!.isEmpty) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text('Invalid name entered.'),
+                                    ),
+                                  );
+                                  return;
+                                }
+
+                                if (newPrice == null) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text('Invalid price entered.'),
+                                    ),
+                                  );
+                                  return;
+                                }
+
+                                Navigator.of(context).pop();
+                              },
+                              child: Text('Submit'),
+                            ),
+                          ], // actions
+                        );
+                      },
+                    );
+
+                    // Now newName, newPrice, newDescription hold the user input (null if cancelled)
+                    if (newName != null &&
+                        newName!.isNotEmpty &&
+                        newPrice != null) {
+                      // You can now use newName, newPrice, newDescription as needed
+                      CheckoutItem newItem = CheckoutItem(
+                        newName,
+                        newPrice,
+                        newDescription,
+                      );
+                      buttonLabels.insert(buttonLabels.length - 1, newItem);
+                      context.read<ShoppingCartList>().add(newName!);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Added: $newName (\$$newPrice)'),
+                        ),
+                      );
+                      // Optionally, add to your buttonLabels or item list here
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.zero,
                     ),
-                  );
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color.fromARGB(255, 73, 158, 227),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.zero,
                   ),
-                ),
-                child: Text(
-                  buttonLabels[index].name!,
-                  style: TextStyle(fontSize: 17, color: Colors.white),
-                ),
-              );
+                  child: Text(
+                    buttonLabels[index].name!,
+                    style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white),
+                  ),
+                );
+              } else {
+                return ElevatedButton(
+                  onPressed: () {
+                    context
+                        .read<ShoppingCartList>()
+                        .add(buttonLabels[index].name!);
+                    subtotal += buttonLabels[index].price!;
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                            'You added ${buttonLabels[index].name} to the cart'),
+                      ),
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color.fromARGB(255, 73, 158, 227),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.zero,
+                    ),
+                  ),
+                  child: Text(
+                    buttonLabels[index].name!,
+                    style: TextStyle(fontSize: 17, color: Colors.white),
+                  ),
+                );
+              }
+
+              //   ScaffoldMessenger.of(context).showSnackBar(
+              //     SnackBar(
+              //       content: Text(
+              //           'You added ${buttonLabels[index].name} to the cart'),
+              //     ),
+              //   );
+              // },
+              // style: ElevatedButton.styleFrom(
+              //   backgroundColor: const Color.fromARGB(255, 73, 158, 227),
+              //   shape: RoundedRectangleBorder(
+              //     borderRadius: BorderRadius.zero,
+              //   ),
+              // ),
+              // child: Text(
+              //   buttonLabels[index].name!,
+              //   style: TextStyle(fontSize: 17, color: Colors.white),
+              // ),
+              // );
             },
           ),
         ),
@@ -392,19 +505,21 @@ class _CheckoutPageState extends State<CheckoutPage> {
   }
 
   Widget _buildCheckoutState(List<String> cartItems) {
-  switch (checkoutState) {
-    case 0:
-      return _buildCartPanel(cartItems);
-    case 1:
-      return _buildPaymentOption(cartItems);
-    case 2:
-      return _buildPaymentConfirm();
-    default:
-      return _buildCartPanel(cartItems); // fallback
+    switch (checkoutState) {
+      case 0:
+        return _buildCartPanel(cartItems);
+      case 1:
+        return _buildPaymentOption(cartItems);
+      case 2:
+        return _buildPaymentConfirm();
+      default:
+        return _buildCartPanel(cartItems); // fallback
+    }
   }
-}
 
-  Widget _buildCartPanel(List<String> cart_items, ) {
+  Widget _buildCartPanel(
+    List<String> cart_items,
+  ) {
     final subtotal = _calculateSubtotal(cart_items);
     final tax = subtotal * taxRate;
     final total = subtotal + tax;
@@ -508,10 +623,9 @@ class _CheckoutPageState extends State<CheckoutPage> {
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
           child: Column(
             children: [
-              _buildPriceRow('Subtotal',
-                  '\$${subtotal.toStringAsFixed(2)}'),
+              _buildPriceRow('Subtotal', '\$${subtotal.toStringAsFixed(2)}'),
               _buildPriceRow('Tax (${(taxRate * 100).toStringAsFixed(2)}%)',
-                '\$${(subtotal * taxRate).toStringAsFixed(2)}'),
+                  '\$${(subtotal * taxRate).toStringAsFixed(2)}'),
               const SizedBox(height: 8),
               Row(
                 children: const [
@@ -545,9 +659,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
                     Text('Total',
                         style: TextStyle(
                             fontSize: 18, fontWeight: FontWeight.bold)),
-                    //TODO: adjust total
-                    Text(
-                        '\$${total.toStringAsFixed(2)}',
+                    Text('\$${total.toStringAsFixed(2)}',
                         style: TextStyle(
                             fontSize: 18, fontWeight: FontWeight.bold)),
                   ],
@@ -570,8 +682,8 @@ class _CheckoutPageState extends State<CheckoutPage> {
                     ),
                   )
                 : ElevatedButton.icon(
-                  onPressed: () {
-                    _checkoutHelper(1);
+                    onPressed: () {
+                      _checkoutHelper(1);
                     },
                     icon: const Icon(Icons.shopping_cart_checkout),
                     label: const Text('Checkout'),
@@ -581,13 +693,14 @@ class _CheckoutPageState extends State<CheckoutPage> {
                       padding: const EdgeInsets.symmetric(vertical: 16),
                     ),
                   ),
-            ),
+          ),
         ),
       ],
     );
   }
 
-  Widget _paymentButton(IconData icon, String label, {bool isSelected = false, VoidCallback? onTap}) {
+  Widget _paymentButton(IconData icon, String label,
+      {bool isSelected = false, VoidCallback? onTap}) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -602,40 +715,42 @@ class _CheckoutPageState extends State<CheckoutPage> {
           children: [
             Icon(icon, color: isSelected ? Colors.white : Colors.black),
             SizedBox(width: 8),
-            Text(label, style: TextStyle(color: isSelected ? Colors.white : Colors.black)),
+            Text(label,
+                style:
+                    TextStyle(color: isSelected ? Colors.white : Colors.black)),
           ],
         ),
       ),
     );
   }
 
-Widget _buildInputField(
-  String label, {
-  bool obscure = false,
-  String? hint,
-  String? prefixText,
-  TextEditingController? controller,
-  TextInputType keyboardType = TextInputType.text,
-}) {
-  return Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Text(label),
-      SizedBox(height: 4),
-      TextField(
-        controller: controller,
-        obscureText: obscure,
-        keyboardType: keyboardType,
-        decoration: InputDecoration(
-          hintText: hint,
-          prefixText: prefixText,
-          border: OutlineInputBorder(),
-          contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+  Widget _buildInputField(
+    String label, {
+    bool obscure = false,
+    String? hint,
+    String? prefixText,
+    TextEditingController? controller,
+    TextInputType keyboardType = TextInputType.text,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label),
+        SizedBox(height: 4),
+        TextField(
+          controller: controller,
+          obscureText: obscure,
+          keyboardType: keyboardType,
+          decoration: InputDecoration(
+            hintText: hint,
+            prefixText: prefixText,
+            border: OutlineInputBorder(),
+            contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          ),
         ),
-      ),
-    ],
-  );
-}
+      ],
+    );
+  }
 
   int _selectedPaymentIndex = 0;
   late TextEditingController _cardNumberController;
@@ -654,53 +769,53 @@ Widget _buildInputField(
   }
 
   void _processPayment(double total) {
-  if (_selectedPaymentIndex == 2) {
-    final cash = double.tryParse(_cashInputController.text) ?? 0.0;
-    if (cash < total) {
-      setState(() {
-        _cashError = 'Insufficient cash provided.';
-        _cashChange = null;
-      });
+    if (_selectedPaymentIndex == 2) {
+      final cash = double.tryParse(_cashInputController.text) ?? 0.0;
+      if (cash < total) {
+        setState(() {
+          _cashError = 'Insufficient cash provided.';
+          _cashChange = null;
+        });
+      } else {
+        setState(() {
+          _cashError = null;
+          _cashChange = cash - total;
+        });
+        _checkoutHelper(2);
+      }
     } else {
-      setState(() {
-        _cashError = null;
-        _cashChange = cash - total;
-      });
+      // validate other methods here as needed
       _checkoutHelper(2);
     }
-  } else {
-    // validate other methods here as needed
-    _checkoutHelper(2);
   }
-}
 
-void _handleExternalService(String serviceName) {
-  // Placeholder: In a real app, this would initiate an SDK or redirect flow
-  print('Redirecting to $serviceName...');
-  ScaffoldMessenger.of(context).showSnackBar(
-    SnackBar(content: Text('Redirecting to $serviceName...')),
-  );
-}
+  void _handleExternalService(String serviceName) {
+    // Placeholder: In a real app, this would initiate an SDK or redirect flow
+    print('Redirecting to $serviceName...');
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Redirecting to $serviceName...')),
+    );
+  }
 
-@override
-void initState() {
-  super.initState();
-  _cardNumberController = TextEditingController();
-  _expController = TextEditingController();
-  _cvvController = TextEditingController();
-  _zipController = TextEditingController();
-  _cashInputController = TextEditingController();
-}
+  @override
+  void initState() {
+    super.initState();
+    _cardNumberController = TextEditingController();
+    _expController = TextEditingController();
+    _cvvController = TextEditingController();
+    _zipController = TextEditingController();
+    _cashInputController = TextEditingController();
+  }
 
-@override
-void dispose() {
-  _cardNumberController.dispose();
-  _expController.dispose();
-  _cvvController.dispose();
-  _zipController.dispose();
-  _cashInputController.dispose();
-  super.dispose();
-}
+  @override
+  void dispose() {
+    _cardNumberController.dispose();
+    _expController.dispose();
+    _cvvController.dispose();
+    _zipController.dispose();
+    _cashInputController.dispose();
+    super.dispose();
+  }
 
   Widget _buildPaymentOption(cartItems) {
     final subtotal = _calculateSubtotal(cartItems);
@@ -713,9 +828,11 @@ void dispose() {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Header
-          Text('Payment', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+          Text('Payment',
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
           SizedBox(height: 4),
-          Text('Select payment method', style: TextStyle(fontSize: 16, color: Colors.grey)),
+          Text('Select payment method',
+              style: TextStyle(fontSize: 16, color: Colors.grey)),
           SizedBox(height: 16),
 
           // Payment method buttons
@@ -723,65 +840,90 @@ void dispose() {
             spacing: 16,
             runSpacing: 16,
             children: [
-              _paymentButton(Icons.credit_card, 'Credit Card', isSelected: _selectedPaymentIndex == 0, onTap: () => _setPaymentMethod(0)),
-              _paymentButton(Icons.credit_card, 'Debit Card', isSelected: _selectedPaymentIndex == 1, onTap: () => _setPaymentMethod(1)),
-              _paymentButton(Icons.attach_money, 'Cash', isSelected: _selectedPaymentIndex == 2, onTap: () => _setPaymentMethod(2)),
-              _paymentButton(Icons.share, 'Other', isSelected: _selectedPaymentIndex == 3, onTap: () => _setPaymentMethod(3)),
+              _paymentButton(Icons.credit_card, 'Credit Card',
+                  isSelected: _selectedPaymentIndex == 0,
+                  onTap: () => _setPaymentMethod(0)),
+              _paymentButton(Icons.credit_card, 'Debit Card',
+                  isSelected: _selectedPaymentIndex == 1,
+                  onTap: () => _setPaymentMethod(1)),
+              _paymentButton(Icons.attach_money, 'Cash',
+                  isSelected: _selectedPaymentIndex == 2,
+                  onTap: () => _setPaymentMethod(2)),
+              _paymentButton(Icons.share, 'Other',
+                  isSelected: _selectedPaymentIndex == 3,
+                  onTap: () => _setPaymentMethod(3)),
             ],
           ),
           SizedBox(height: 24),
 
           // Credit Card
           if (_selectedPaymentIndex == 0) ...[
-            Text('Credit Card', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            Text('Credit Card',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
             SizedBox(height: 12),
             _buildInputField('Card Number', controller: _cardNumberController),
             SizedBox(height: 12),
             Row(
               children: [
-                Expanded(child: _buildInputField('Expiration Date', hint: 'MM/YY', controller: _expController)),
+                Expanded(
+                    child: _buildInputField('Expiration Date',
+                        hint: 'MM/YY', controller: _expController)),
                 SizedBox(width: 12),
-                Expanded(child: _buildInputField('CVV', controller: _cvvController)),
+                Expanded(
+                    child: _buildInputField('CVV', controller: _cvvController)),
               ],
             ),
             SizedBox(height: 8),
-            Text('No ZIP required. Secure processing.', style: TextStyle(color: Colors.grey)),
+            Text('No ZIP required. Secure processing.',
+                style: TextStyle(color: Colors.grey)),
           ],
 
           // Debit Card
           if (_selectedPaymentIndex == 1) ...[
-            Text('Debit Card', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            Text('Debit Card',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
             SizedBox(height: 12),
             _buildInputField('Card Number', controller: _cardNumberController),
             SizedBox(height: 12),
             Row(
               children: [
-                Expanded(child: _buildInputField('Expiration Date', hint: 'MM/YY', controller: _expController)),
+                Expanded(
+                    child: _buildInputField('Expiration Date',
+                        hint: 'MM/YY', controller: _expController)),
                 SizedBox(width: 12),
-                Expanded(child: _buildInputField('CVV', controller: _cvvController)),
+                Expanded(
+                    child: _buildInputField('CVV', controller: _cvvController)),
               ],
             ),
             SizedBox(height: 12),
-            _buildInputField('ZIP Code', hint: '12345', controller: _zipController),
+            _buildInputField('ZIP Code',
+                hint: '12345', controller: _zipController),
           ],
 
           // Cash
           if (_selectedPaymentIndex == 2) ...[
-            Text('Cash Payment', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            Text('Cash Payment',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
             SizedBox(height: 12),
-            _buildInputField('Enter Cash Received', prefixText: '\$', controller: _cashInputController, keyboardType: TextInputType.number),
-            if (_cashError != null) Padding(
-              padding: const EdgeInsets.only(top: 8),
-              child: Text(_cashError!, style: TextStyle(color: Colors.red)),
-            ),
+            _buildInputField('Enter Cash Received',
+                prefixText: '\$',
+                controller: _cashInputController,
+                keyboardType: TextInputType.number),
+            if (_cashError != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: Text(_cashError!, style: TextStyle(color: Colors.red)),
+              ),
             SizedBox(height: 12),
             if (_cashChange != null)
-              Text('Change: \$${_cashChange!.toStringAsFixed(2)}', style: TextStyle(fontWeight: FontWeight.bold)),
+              Text('Change: \$${_cashChange!.toStringAsFixed(2)}',
+                  style: TextStyle(fontWeight: FontWeight.bold)),
           ],
 
           // Other
           if (_selectedPaymentIndex == 3) ...[
-            Text('Other Payment Methods', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            Text('Other Payment Methods',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
             SizedBox(height: 12),
             Wrap(
               spacing: 12,
@@ -806,8 +948,10 @@ void dispose() {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Total', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-              Text('\$${total.toStringAsFixed(2)}', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+              Text('Total',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+              Text('\$${total.toStringAsFixed(2)}',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
             ],
           ),
           SizedBox(height: 12),
@@ -822,7 +966,8 @@ void dispose() {
               SizedBox(width: 12),
               Expanded(
                 child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(backgroundColor: Colors.black),
+                  style:
+                      ElevatedButton.styleFrom(backgroundColor: Colors.black),
                   onPressed: () => _processPayment(total),
                   child: Text('Complete Sale'),
                 ),
@@ -835,22 +980,22 @@ void dispose() {
   }
 
   Widget _buildPaymentConfirm() {
-  return Center(
-    child: Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: const [
-        Icon(Icons.check_circle, color: Colors.green, size: 80),
-        SizedBox(height: 16),
-        Text(
-          'Thank you for your purchase!',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-        ),
-        SizedBox(height: 8),
-        Text('Your order has been placed.'),
-      ],
-    ),
-  );
-}
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: const [
+          Icon(Icons.check_circle, color: Colors.green, size: 80),
+          SizedBox(height: 16),
+          Text(
+            'Thank you for your purchase!',
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          ),
+          SizedBox(height: 8),
+          Text('Your order has been placed.'),
+        ],
+      ),
+    );
+  }
 
   static Widget _buildPriceRow(String label, String amount) {
     return Padding(
