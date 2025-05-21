@@ -593,7 +593,6 @@ class _CheckoutPageState extends State<CheckoutPage> {
                             icon: Icon(Icons.remove_circle_outline),
                             onPressed: () {
                               context.read<ShoppingCartList>().remove(item);
-                              //subtotal -= buttonLabels[index].price!;
                             },
                           ),
                           Text('$itemCount', style: TextStyle(fontSize: 16)),
@@ -601,14 +600,12 @@ class _CheckoutPageState extends State<CheckoutPage> {
                             icon: Icon(Icons.add_circle_outline),
                             onPressed: () {
                               context.read<ShoppingCartList>().add(item);
-                              //subtotal += buttonLabels[index].price!;
                             },
                           ),
                           IconButton(
                             icon: Icon(Icons.delete),
                             onPressed: () {
                               context.read<ShoppingCartList>().removeAll(item);
-                              //subtotal -=
                               itemCount * buttonLabels[index].price!;
                             },
                           ),
@@ -967,8 +964,19 @@ class _CheckoutPageState extends State<CheckoutPage> {
               Expanded(
                 child: ElevatedButton(
                   style:
-                      ElevatedButton.styleFrom(backgroundColor: Colors.black),
-                  onPressed: () => _processPayment(total),
+                      ElevatedButton.styleFrom(backgroundColor: Colors.black, foregroundColor:const Color.fromARGB(255, 196, 222, 243),
+),
+                    onPressed: () {
+                    
+
+                    _processPayment(total); 
+                    final cartProvider = context.read<ShoppingCartList>();
+                    final uniqueItems = cartProvider.items.toSet().toList();
+                    for (var item in uniqueItems) {
+                      cartProvider.removeAll(item);
+                    }
+
+                    },
                   child: Text('Complete Sale'),
                 ),
               ),
@@ -983,7 +991,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
-        children: const [
+        children: [
           Icon(Icons.check_circle, color: Colors.green, size: 80),
           SizedBox(height: 16),
           Text(
@@ -992,6 +1000,31 @@ class _CheckoutPageState extends State<CheckoutPage> {
           ),
           SizedBox(height: 8),
           Text('Your order has been placed.'),
+          SizedBox(height: 50),
+          ElevatedButton(
+            onPressed: () {
+              // Reset to initial state
+              setState(() {
+                checkoutState = 0;
+                _selectedPaymentIndex = 0;
+                _cashError = null;
+                _cashChange = null;
+                _cardNumberController.clear();
+                _expController.clear();
+                _cvvController.clear();
+                _zipController.clear();
+                _cashInputController.clear();
+              });
+            },
+
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color.fromARGB(255, 1, 87, 157)
+,
+              foregroundColor: Colors.white,
+            ),
+            child: Text('Start New Order'),
+            
+          )
         ],
       ),
     );
