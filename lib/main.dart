@@ -233,6 +233,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
   var checkoutState = 0;
   final double taxRate = 0.13;
   double subtotal = 0.0;
+  double tip = 0.0;
 
   double _calculateSubtotal(List<String> cart_items) {
     double subtotal = 0.0;
@@ -512,6 +513,8 @@ class _CheckoutPageState extends State<CheckoutPage> {
         return _buildPaymentOption(cartItems);
       case 2:
         return _buildPaymentConfirm();
+      case 3:
+        return _buildTippingPage(cartItems);
       default:
         return _buildCartPanel(cartItems); // fallback
     }
@@ -680,7 +683,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
                   )
                 : ElevatedButton.icon(
                     onPressed: () {
-                      _checkoutHelper(1);
+                      _checkoutHelper(3); 
                     },
                     icon: const Icon(Icons.shopping_cart_checkout),
                     label: const Text('Checkout'),
@@ -814,10 +817,117 @@ class _CheckoutPageState extends State<CheckoutPage> {
     super.dispose();
   }
 
+Widget _buildTippingPage(cartItems) {
+  double subtotal = _calculateSubtotal(cartItems);
+  double tax = subtotal * taxRate;
+  double total = subtotal + tax;
+
+  // Define tip options
+  final tipOptions = [
+    {'label': '10%', 'sub': '\$${(subtotal * 0.1).toStringAsFixed(2)}', 'value': 0.10},
+    {'label': '15%', 'sub': '\$${(subtotal * 0.15).toStringAsFixed(2)}', 'value': 0.15},
+    {'label': '20%', 'sub': '\$${(subtotal * 0.2).toStringAsFixed(2)}', 'value': 0.20},
+    {'label': '25%', 'sub': '\$${(subtotal * 0.25).toStringAsFixed(2)}', 'value': 0.25},
+    {'label': 'No Tip', 'sub': '', 'value': 0.0},
+    {'label': 'Custom', 'sub': '', 'value': null},
+  ];
+
+  return Center(
+    child: Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Text('Add a tip:',
+            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+        SizedBox(height: 4),
+        Text('Your total: \$${subtotal.toStringAsFixed(2)}',
+            style: TextStyle(fontSize: 16, color: Colors.grey)),
+        SizedBox(height: 16),
+        // Tip buttons grid
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24.0),
+          child: GridView.count(
+            shrinkWrap: true,
+            crossAxisCount: 2,
+            mainAxisSpacing: 12,
+            crossAxisSpacing: 12,
+            childAspectRatio: 2.5,
+            children: tipOptions.map((tip) {
+              return ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color.fromARGB(255, 4, 123, 179),
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  padding: EdgeInsets.symmetric(vertical: 12),
+                ),
+                onPressed: () {
+                  // TODO: handle tip selection
+                  // For example: setState(() => tip = tip['value']);
+                  if (tip['value'] == null) {
+                    // Show custom tip dialog
+                    showDialog(
+                      context: context,
+                      builder: (context) {
+                        return AlertDialog(
+                          title: Text('Enter Custom Tip'),
+                          content: TextField(
+                            keyboardType: TextInputType.number,
+                            decoration: InputDecoration(hintText: 'Tip Amount', suffixText: '%'),
+                            
+                            onChanged: (value) {
+                              setState(() {
+                                this.tip = (double.tryParse(value) ?? 0.0);
+                                this.tip *= 0.01; // Convert percentage to decimal
+                              });
+                            },
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                                _checkoutHelper(1);
+                              },
+                              child: Text('OK'),
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                  } else {
+                    setState(() {
+                      this.tip = subtotal * (tip['value'] as double);
+                      _checkoutHelper(1); // Go to payment
+                    });
+                  }
+                },
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      tip['label']!.toString(),
+                      style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                    ),
+                    if (tip['sub']!.toString().isNotEmpty)
+                      Text(
+                        tip['sub']!.toString(),
+                        style: TextStyle(fontSize: 14, color: Colors.white70),
+                      ),
+                  ],
+                ),
+              );
+            }).toList(),
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
   Widget _buildPaymentOption(cartItems) {
     final subtotal = _calculateSubtotal(cartItems);
     final tax = subtotal * taxRate;
-    final total = subtotal + tax;
+    final total = subtotal + tax + tip;
 
     return Padding(
       padding: const EdgeInsets.all(16.0),
@@ -968,7 +1078,6 @@ class _CheckoutPageState extends State<CheckoutPage> {
 ),
                     onPressed: () {
                     
-
                     _processPayment(total); 
                     final cartProvider = context.read<ShoppingCartList>();
                     final uniqueItems = cartProvider.items.toSet().toList();
