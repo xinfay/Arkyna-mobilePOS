@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:universal_html/html.dart' as html;
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   final shoppingCartList = ShoppingCartList();
@@ -52,46 +52,41 @@ class ShoppingCartList extends ChangeNotifier {
   List<String> get items => List.unmodifiable(_items);
 
   ShoppingCartList() {
-    _loadCartFromCookie();
+    _loadCart();
   }
 
   void add(String item) {
     _items.add(item);
     notifyListeners();
-    _saveCartToCookie();
+    _saveCart();
   }
 
   void remove(String item) {
     _items.remove(item);
     notifyListeners();
-    _saveCartToCookie();
+    _saveCart();
   }
 
   void removeAll(String item) {
     _items.removeWhere((i) => i == item);
     notifyListeners();
-    _saveCartToCookie();
+    _saveCart();
   }
 
-  void _saveCartToCookie() {
-    final cartString = _items.join(',');
-    // Set cookie for 7 days
-    html.document.cookie = 'cart=$cartString; path=/; max-age=604800';
+
+  Future<void> _saveCart() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList('cart_items', _items);
   }
 
-  void _loadCartFromCookie() {
-    final cookies = html.document.cookie?.split('; ') ?? [];
-    for (final cookie in cookies) {
-      if (cookie.startsWith('cart=')) {
-        final value = cookie.substring('cart='.length);
-        _items.clear();
-        if (value.isNotEmpty) {
-          _items.addAll(value.split(','));
-        }
-        break;
-      }
+  Future<void> _loadCart() async {
+    final prefs = await SharedPreferences.getInstance();
+    final saved = prefs.getStringList('cart_items');
+    if (saved != null) {
+      _items.clear();
+      _items.addAll(saved);
+      notifyListeners();
     }
-    notifyListeners();
   }
 }
 
