@@ -1,0 +1,11 @@
+{
+  "name": "square-checkout-backend",
+  "version": "1.0.0",
+  "main": "index.js",
+  "dependencies": {
+    "express": "^4.18.0",
+    "dotenv": "^16.0.0",
+    "uuid": "^9.0.0",
+    "square": "^32.0.0"
+  }
+}
