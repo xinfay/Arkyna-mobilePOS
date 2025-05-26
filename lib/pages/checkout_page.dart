@@ -520,6 +520,7 @@ Widget _buildPaymentOption(List<String> cartItems) {
                     builder: (_) => PaymentProcessingPage(
                       cartItems: cartItems,
                       priceLookup: buttonLabels,
+                      tip: tip,
                     ),
                   ),
                 );
@@ -534,6 +535,7 @@ Widget _buildPaymentOption(List<String> cartItems) {
                     builder: (_) => PaymentProcessingPage(
                       cartItems: cartItems,
                       priceLookup: buttonLabels,
+                      tip: tip,
                     ),
                   ),
                 );

@@ -7,10 +7,12 @@ import '../models/checkout_item.dart';
 class PaymentProcessingPage extends StatefulWidget {
   final List<String> cartItems;
   final List<CheckoutItem> priceLookup;
+  final double tip;
 
   PaymentProcessingPage({
     required this.cartItems,
     required this.priceLookup,
+    required this.tip,
   });
 
   @override
@@ -20,6 +22,7 @@ class PaymentProcessingPage extends StatefulWidget {
 class _PaymentProcessingPageState extends State<PaymentProcessingPage> {
   bool _isLoading = true;
   String? _error;
+  
 
   @override
   void initState() {
@@ -41,7 +44,8 @@ class _PaymentProcessingPageState extends State<PaymentProcessingPage> {
 
       const taxRate = 0.13;
       final tax = subtotal * taxRate;
-      final total = subtotal + tax;
+      // final total = subtotal + tax;
+      final total = subtotal + tax + widget.tip;
       final int amountInCents = (total * 100).round();
 
       final response = await http.post(
