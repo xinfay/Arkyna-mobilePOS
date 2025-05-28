@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../providers/sales_tab.dart';
 import '../providers/products_tab.dart';
+import '../providers/customers_tab.dart';
 
 class AnalyticsPage extends StatefulWidget {
   const AnalyticsPage({super.key});
@@ -44,7 +45,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> with SingleTickerProvider
         children: const [
           SalesTab(),
           ProductsTab(),
-          Center(child: Text('Customers Tab Placeholder')),
+          CustomersTab(),
         ],
       ),
     );

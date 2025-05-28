@@ -96,10 +96,17 @@ class _SalesTabState extends State<SalesTab> {
                 showTitles: true,
                 getTitlesWidget: (value, meta) {
                   final hour = value.toInt();
-                  return Text(
-                    hour < 12 ? '$hour AM' : (hour == 12 ? '12 PM' : '${hour - 12} PM'),
-                    style: const TextStyle(fontSize: 10),
-                  );
+                  String label;
+                  if (hour == 0) {
+                    label = '12 AM';
+                  } else if (hour == 12) {
+                    label = '12 PM';
+                  } else if (hour < 12) {
+                    label = '$hour AM';
+                  } else {
+                    label = '${hour - 12} PM';
+                  }
+                  return Text(label, style: const TextStyle(fontSize: 10));
                 },
                 reservedSize: 28,
               ),
@@ -128,10 +135,16 @@ class _SalesTabState extends State<SalesTab> {
 
   Map<int, double> _getHourlyRevenue() {
     final Map<int, double> hourlyTotals = {};
+    final now = DateTime.now();
 
     for (final order in orders) {
-      final hour = order.timestamp.hour;
-      hourlyTotals[hour] = (hourlyTotals[hour] ?? 0) + order.total;
+      final ts = order.timestamp;
+      final isToday = ts.year == now.year && ts.month == now.month && ts.day == now.day;
+
+      if (isToday) {
+        final hour = ts.hour;
+        hourlyTotals[hour] = (hourlyTotals[hour] ?? 0) + order.total;
+      }
     }
 
     return hourlyTotals;
@@ -160,7 +173,6 @@ class _SalesTabState extends State<SalesTab> {
   Widget _buildWeeklyLineChart() {
     final data = _getRevenueByWeekday();
     final dayLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-    final maxY = data.values.fold(0.0, (prev, curr) => curr > prev ? curr : prev);
 
     return SizedBox(
       height: 200,
@@ -231,11 +243,16 @@ class _SalesTabState extends State<SalesTab> {
         final hour = entry.key;
         final revenue = entry.value;
 
-        final label = hour < 12
-            ? '$hour AM'
-            : hour == 12
-                ? '12 PM'
-                : '${hour - 12} PM';
+        String label;
+        if (hour == 0) {
+          label = '12 AM';
+        } else if (hour == 12) {
+          label = '12 PM';
+        } else if (hour < 12) {
+          label = '$hour AM';
+        } else {
+          label = '${hour - 12} PM';
+        }
 
         return Container(
           margin: const EdgeInsets.symmetric(vertical: 6),
@@ -257,38 +274,76 @@ class _SalesTabState extends State<SalesTab> {
     );
   }
 
+  List<MapEntry<String, double>> _getTopDays({int count = 3}) {
+    final Map<String, double> revenueByDay = _getRevenueByWeekday();
+    final sorted = revenueByDay.entries.toList()
+      ..sort((a, b) => b.value.compareTo(a.value));
+    return sorted.take(count).toList();
+  }
+
+  Widget _buildTopDaysList() {
+    final topDays = _getTopDays();
+
+    if (topDays.isEmpty) return const Text("No sales data yet.");
+
+    return Column(
+      children: topDays.map((entry) {
+        return Container(
+          margin: const EdgeInsets.symmetric(vertical: 6),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.grey.shade100,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.grey.shade300),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(entry.key, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+              Text("\$${entry.value.toStringAsFixed(2)}", style: const TextStyle(fontSize: 16)),
+            ],
+          ),
+        );
+      }).toList(),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(16),
-      child: orders.isEmpty
-          ? const Center(child: Text("No orders yet"))
-          : Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Wrap(
-                  spacing: 12,
-                  runSpacing: 12,
-                  children: [
-                    _buildMetric("Total Revenue", "\$${totalRevenue.toStringAsFixed(2)}"),
-                    _buildMetric("Transactions", "${orders.length}"),
-                    _buildMetric("Average Order", "\$${averageOrderValue.toStringAsFixed(2)}"),
-                  ],
-                ),
-                const SizedBox(height: 24),
-                const Text("Hourly Sales", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 12),
-                _buildHourlyBarChart(),
-                const SizedBox(height: 32),
-                const Text("Weekly Performance", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 12),
-                _buildWeeklyLineChart(),
-                const SizedBox(height: 32),
-                const Text("Top Sales Hours", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 12),
-                _buildTopHoursList(),
-              ],
-            ),
-    );
+    return orders.isEmpty
+      ? const Center(child: Text("No orders yet"))
+      : SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Wrap(
+                spacing: 12,
+                runSpacing: 12,
+                children: [
+                  _buildMetric("Total Revenue", "\$${totalRevenue.toStringAsFixed(2)}"),
+                  _buildMetric("Transactions", "${orders.length}"),
+                  _buildMetric("Average Order", "\$${averageOrderValue.toStringAsFixed(2)}"),
+                ],
+              ),
+              const SizedBox(height: 24),
+              const Text("Hourly Sales", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 12),
+              _buildHourlyBarChart(),
+              const SizedBox(height: 32),
+              const Text("Top Sales Hours", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 12),
+              _buildTopHoursList(),
+              const SizedBox(height: 32),
+              const Text("Weekly Performance", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 12),
+              _buildWeeklyLineChart(),
+              const SizedBox(height: 32),
+              const Text("Top Sales Days", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 12),
+              _buildTopDaysList(),
+            ],
+          ),
+        );
   }
 }

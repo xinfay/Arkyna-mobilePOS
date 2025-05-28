@@ -426,8 +426,6 @@ class _CheckoutPageState extends State<CheckoutPage> {
 
 Widget _buildTippingPage(List<String> cartItems) {
   final subtotal = _calculateSubtotal(cartItems);
-  final tax = subtotal * taxRate;
-  final total = subtotal + tax;
 
   final tipOptions = [
     {'label': '10%', 'sub': '\$${(subtotal * 0.10).toStringAsFixed(2)}', 'value': 0.10},
