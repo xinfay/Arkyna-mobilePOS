@@ -6,6 +6,9 @@ class InventoryItem {
   int stock;
   String status;
 
+  int minStock;
+  String supplier;
+
   InventoryItem(
     this.name,
     this.sku,
@@ -13,6 +16,8 @@ class InventoryItem {
     this.price,
     this.stock,
     this.status,
+    this.minStock,
+    this.supplier,
   );
 
   Map<String, dynamic> toJson() => {
@@ -22,6 +27,8 @@ class InventoryItem {
     'price': price,
     'stock': stock,
     'status': status,
+    'minStock': minStock,
+    'supplier': supplier,
   };
 
   static InventoryItem fromJson(Map<String, dynamic> json) => InventoryItem(
@@ -31,5 +38,7 @@ class InventoryItem {
     (json['price'] as num).toDouble(),
     json['stock'],
     json['status'],
+    json['minStock'] ?? 0,
+    json['supplier'] ?? '',
   );
 }
