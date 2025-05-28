@@ -4,6 +4,9 @@ import '../models/checkout_item.dart';
 import '../pages/payment_processing_page.dart';
 import '../providers/cart_provider.dart';
 import '../widgets/common_widgets.dart';
+import 'package:uuid/uuid.dart';
+import '../models/order_model.dart';
+import '../providers/analytics_service.dart';
 
 
 class CheckoutPage extends StatefulWidget {
@@ -73,24 +76,58 @@ class _CheckoutPageState extends State<CheckoutPage> {
     });
   }
 
-  void _processPayment(double total) {
+  void _processPayment(double total) async {
+    final cartItems = context.read<ShoppingCartList>().items;
+    final subtotal = _calculateSubtotal(cartItems);
+    final tax = subtotal * taxRate;
+    final fullTotal = subtotal + tax + tip;
+
     if (_selectedPaymentIndex == 2) {
       final cash = double.tryParse(_cashInputController.text) ?? 0.0;
-      if (cash < total) {
+      if (cash < fullTotal) {
         setState(() {
           _cashError = 'Insufficient cash provided.';
           _cashChange = null;
         });
+        return;
       } else {
         setState(() {
           _cashError = null;
-          _cashChange = cash - total;
+          _cashChange = cash - fullTotal;
         });
-        _checkoutHelper(2);
       }
-    } else {
-      _checkoutHelper(2);
     }
+    await _saveCompletedOrder(cartItems, subtotal, tax, tip, fullTotal);
+
+    _checkoutHelper(2); 
+  }
+
+  Future<void> _saveCompletedOrder(List<String> cartItems, double subtotal, double tax, double tip, double total) async {
+    final Map<String, int> itemCounts = {};
+    for (var itemName in cartItems) {
+      itemCounts[itemName] = (itemCounts[itemName] ?? 0) + 1;
+    }
+
+    final List<OrderItem> orderItems = itemCounts.entries.map((entry) {
+      final item = buttonLabels.firstWhere((e) => e.name == entry.key);
+      return OrderItem(
+        name: item.name,
+        price: item.price,
+        quantity: entry.value,
+      );
+    }).toList();
+
+    final order = Order(
+      id: const Uuid().v4(),
+      timestamp: DateTime.now(),
+      items: orderItems,
+      subtotal: subtotal,
+      tax: tax,
+      tip: tip,
+      total: total,
+    );
+
+    await AnalyticsService.saveOrder(order);
   }
 
   void _handleExternalService(String service) {
