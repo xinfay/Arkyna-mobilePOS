@@ -28,6 +28,8 @@ class _CheckoutPageState extends State<CheckoutPage> {
   String? _cashError;
   double? _cashChange;
 
+  bool _isProcessing = false;
+
   final List<CheckoutItem> buttonLabels = [
     CheckoutItem('Cappuccino', 4.50, 'A classic cappuccino.'),
     CheckoutItem('Latte', 4.00, 'Smooth espresso with milk.'),
@@ -76,7 +78,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
     });
   }
 
-  void _processPayment(double total) async {
+  Future<void> _processPayment(double total) async {
     final cartItems = context.read<ShoppingCartList>().items;
     final subtotal = _calculateSubtotal(cartItems);
     final tax = subtotal * taxRate;
@@ -661,13 +663,24 @@ Widget _buildPaymentOption(List<String> cartItems) {
                   backgroundColor: Colors.black,
                   foregroundColor: const Color.fromARGB(255, 196, 222, 243),
                 ),
-                onPressed: () {
-                  _processPayment(total);
-                  final provider = context.read<ShoppingCartList>();
-                  for (var item in provider.items.toSet()) {
-                    provider.removeAll(item);
-                  }
-                },
+                onPressed: _isProcessing
+                  ? null // disables the button while processing
+                  : () async {
+                      setState(() {
+                        _isProcessing = true;
+                      });
+
+                      await _processPayment(total);
+
+                      final provider = context.read<ShoppingCartList>();
+                      for (var item in provider.items.toSet()) {
+                        provider.removeAll(item);
+                      }
+
+                      setState(() {
+                        _isProcessing = false;
+                      });
+                    },
                 child: const Text('Complete Sale'),
               ),
             ),
