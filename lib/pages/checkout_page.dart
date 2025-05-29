@@ -8,6 +8,20 @@ import 'package:uuid/uuid.dart';
 import '../models/order_model.dart';
 import '../providers/analytics_service.dart';
 
+final List<CheckoutItem> buttonLabels = [
+  CheckoutItem('Cappuccino', 4.50, 'A classic cappuccino.'),
+  CheckoutItem('Latte', 4.00, 'Smooth espresso with milk.'),
+  CheckoutItem('Americano', 3.50, 'Espresso with hot water.'),
+  CheckoutItem('Mocha', 4.75, 'Espresso, milk, chocolate.'),
+  CheckoutItem('Cold Brew', 3.00, 'Iced coffee brew.'),
+  CheckoutItem('Croissant', 2.50, 'Buttery flaky pastry.'),
+  CheckoutItem('Blueberry Muffin', 2.75, 'Muffin with blueberries.'),
+  CheckoutItem('Chocolate Chip Cookie', 1.50, 'Classic cookie.'),
+  CheckoutItem('Chicken Sandwich', 5.00, 'Grilled sandwich.'),
+  CheckoutItem('Caesar Salad', 4.50, 'Romaine with croutons.'),
+  CheckoutItem('Water Bottle', 1.00, 'Plain bottled water.'),
+  CheckoutItem('Add Item', 0.00, 'Add a new item'),
+];
 
 class CheckoutPage extends StatefulWidget {
   const CheckoutPage({Key? key}) : super(key: key);
@@ -15,7 +29,6 @@ class CheckoutPage extends StatefulWidget {
   @override
   State<CheckoutPage> createState() => _CheckoutPageState();
 }
-
 
 class _CheckoutPageState extends State<CheckoutPage> {
   int checkoutState = 0;
@@ -29,21 +42,6 @@ class _CheckoutPageState extends State<CheckoutPage> {
   double? _cashChange;
 
   bool _isProcessing = false;
-
-  final List<CheckoutItem> buttonLabels = [
-    CheckoutItem('Cappuccino', 4.50, 'A classic cappuccino.'),
-    CheckoutItem('Latte', 4.00, 'Smooth espresso with milk.'),
-    CheckoutItem('Americano', 3.50, 'Espresso with hot water.'),
-    CheckoutItem('Mocha', 4.75, 'Espresso, milk, chocolate.'),
-    CheckoutItem('Cold Brew', 3.00, 'Iced coffee brew.'),
-    CheckoutItem('Croissant', 2.50, 'Buttery flaky pastry.'),
-    CheckoutItem('Blueberry Muffin', 2.75, 'Muffin with blueberries.'),
-    CheckoutItem('Chocolate Chip Cookie', 1.50, 'Classic cookie.'),
-    CheckoutItem('Chicken Sandwich', 5.00, 'Grilled sandwich.'),
-    CheckoutItem('Caesar Salad', 4.50, 'Romaine with croutons.'),
-    CheckoutItem('Water Bottle', 1.00, 'Plain bottled water.'),
-    CheckoutItem('Add Item', 0.00, 'Add a new item'),
-  ];
 
   @override
   void initState() {
@@ -101,10 +99,11 @@ class _CheckoutPageState extends State<CheckoutPage> {
     }
     await _saveCompletedOrder(cartItems, subtotal, tax, tip, fullTotal);
 
-    _checkoutHelper(2); 
+    _checkoutHelper(2);
   }
 
-  Future<void> _saveCompletedOrder(List<String> cartItems, double subtotal, double tax, double tip, double total) async {
+  Future<void> _saveCompletedOrder(List<String> cartItems, double subtotal,
+      double tax, double tip, double total) async {
     final Map<String, int> itemCounts = {};
     for (var itemName in cartItems) {
       itemCounts[itemName] = (itemCounts[itemName] ?? 0) + 1;
@@ -176,22 +175,39 @@ class _CheckoutPageState extends State<CheckoutPage> {
                             content: Column(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                TextField(controller: nameCtrl, decoration: const InputDecoration(labelText: 'Name')),
-                                TextField(controller: priceCtrl, decoration: const InputDecoration(labelText: 'Price', prefixText: '\$'), keyboardType: TextInputType.numberWithOptions(decimal: true)),
-                                TextField(controller: descCtrl, decoration: const InputDecoration(labelText: 'Description')),
+                                TextField(
+                                    controller: nameCtrl,
+                                    decoration: const InputDecoration(
+                                        labelText: 'Name')),
+                                TextField(
+                                    controller: priceCtrl,
+                                    decoration: const InputDecoration(
+                                        labelText: 'Price', prefixText: '\$'),
+                                    keyboardType:
+                                        TextInputType.numberWithOptions(
+                                            decimal: true)),
+                                TextField(
+                                    controller: descCtrl,
+                                    decoration: const InputDecoration(
+                                        labelText: 'Description')),
                               ],
                             ),
                             actions: [
-                              TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Cancel')),
+                              TextButton(
+                                  onPressed: () => Navigator.of(context).pop(),
+                                  child: const Text('Cancel')),
                               ElevatedButton(
                                 onPressed: () {
                                   newName = nameCtrl.text;
                                   newPrice = double.tryParse(priceCtrl.text);
                                   newDesc = descCtrl.text;
 
-                                  if (newName == null || newName!.isEmpty || newPrice == null) {
+                                  if (newName == null ||
+                                      newName!.isEmpty ||
+                                      newPrice == null) {
                                     ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(content: Text('Invalid input.')),
+                                      const SnackBar(
+                                          content: Text('Invalid input.')),
                                     );
                                     return;
                                   }
@@ -199,11 +215,18 @@ class _CheckoutPageState extends State<CheckoutPage> {
                                   Navigator.of(context).pop();
 
                                   setState(() {
-                                    buttonLabels.insert(buttonLabels.length - 1, CheckoutItem(newName!, newPrice!, newDesc));
+                                    buttonLabels.insert(
+                                        buttonLabels.length - 1,
+                                        CheckoutItem(
+                                            newName!, newPrice!, newDesc));
                                   });
-                                  context.read<ShoppingCartList>().add(newName!);
+                                  context
+                                      .read<ShoppingCartList>()
+                                      .add(newName!);
                                   ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(content: Text('Added: $newName (\$$newPrice)')),
+                                    SnackBar(
+                                        content: Text(
+                                            'Added: $newName (\$$newPrice)')),
                                   );
                                 },
                                 child: const Text('Submit'),
@@ -215,14 +238,20 @@ class _CheckoutPageState extends State<CheckoutPage> {
                     : () {
                         context.read<ShoppingCartList>().add(item.name);
                         ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('You added ${item.name} to the cart')),
+                          SnackBar(
+                              content:
+                                  Text('You added ${item.name} to the cart')),
                         );
                       },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: isAddItem ? Colors.green : const Color.fromARGB(255, 73, 158, 227),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+                  backgroundColor: isAddItem
+                      ? Colors.green
+                      : const Color.fromARGB(255, 73, 158, 227),
+                  shape:
+                      RoundedRectangleBorder(borderRadius: BorderRadius.zero),
                 ),
-                child: Text(item.name, style: const TextStyle(fontSize: 17, color: Colors.white)),
+                child: Text(item.name,
+                    style: const TextStyle(fontSize: 17, color: Colors.white)),
               );
             },
           ),
@@ -234,7 +263,6 @@ class _CheckoutPageState extends State<CheckoutPage> {
       ],
     );
   }
-
 
   Widget _buildCheckoutState(List<String> cartItems) {
     switch (checkoutState) {
@@ -250,7 +278,6 @@ class _CheckoutPageState extends State<CheckoutPage> {
         return _buildCartPanel(cartItems);
     }
   }
-
 
   Widget _buildCartPanel(List<String> cartItems) {
     final subtotal = _calculateSubtotal(cartItems);
@@ -287,7 +314,8 @@ class _CheckoutPageState extends State<CheckoutPage> {
                       Icon(Icons.receipt_long, size: 60, color: Colors.grey),
                       SizedBox(height: 10),
                       Text('Your cart is empty',
-                          style: TextStyle(fontSize: 18, color: Colors.black54)),
+                          style:
+                              TextStyle(fontSize: 18, color: Colors.black54)),
                       Text('Add items from the menu',
                           style: TextStyle(color: Colors.grey)),
                     ],
@@ -299,9 +327,8 @@ class _CheckoutPageState extends State<CheckoutPage> {
                     final uniqueItems = cartItems.toSet().toList();
                     String item = uniqueItems[index];
                     int itemCount = cartItems.where((i) => i == item).length;
-                    final itemPrice = buttonLabels
-                        .firstWhere((e) => e.name == item)
-                        .price;
+                    final itemPrice =
+                        buttonLabels.firstWhere((e) => e.name == item).price;
 
                     return ListTile(
                       title: Text(item),
@@ -337,8 +364,9 @@ class _CheckoutPageState extends State<CheckoutPage> {
                           ),
                           IconButton(
                             icon: const Icon(Icons.delete),
-                            onPressed: () =>
-                                context.read<ShoppingCartList>().removeAll(item),
+                            onPressed: () => context
+                                .read<ShoppingCartList>()
+                                .removeAll(item),
                           ),
                         ],
                       ),
@@ -377,16 +405,16 @@ class _CheckoutPageState extends State<CheckoutPage> {
             children: cartItems.isEmpty
                 ? const [
                     Text('Total',
-                        style:
-                            TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                        style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold)),
                     Text('\$0.00',
-                        style:
-                            TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                        style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold)),
                   ]
                 : [
                     const Text('Total',
-                        style:
-                            TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                        style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold)),
                     Text('\$${total.toStringAsFixed(2)}',
                         style: const TextStyle(
                             fontSize: 18, fontWeight: FontWeight.bold)),
@@ -425,271 +453,298 @@ class _CheckoutPageState extends State<CheckoutPage> {
     );
   }
 
+  Widget _buildTippingPage(List<String> cartItems) {
+    final subtotal = _calculateSubtotal(cartItems);
 
-Widget _buildTippingPage(List<String> cartItems) {
-  final subtotal = _calculateSubtotal(cartItems);
+    final tipOptions = [
+      {
+        'label': '10%',
+        'sub': '\$${(subtotal * 0.10).toStringAsFixed(2)}',
+        'value': 0.10
+      },
+      {
+        'label': '15%',
+        'sub': '\$${(subtotal * 0.15).toStringAsFixed(2)}',
+        'value': 0.15
+      },
+      {
+        'label': '20%',
+        'sub': '\$${(subtotal * 0.20).toStringAsFixed(2)}',
+        'value': 0.20
+      },
+      {
+        'label': '25%',
+        'sub': '\$${(subtotal * 0.25).toStringAsFixed(2)}',
+        'value': 0.25
+      },
+      {'label': 'No Tip', 'sub': '', 'value': 0.0},
+      {'label': 'Custom', 'sub': '', 'value': null},
+    ];
 
-  final tipOptions = [
-    {'label': '10%', 'sub': '\$${(subtotal * 0.10).toStringAsFixed(2)}', 'value': 0.10},
-    {'label': '15%', 'sub': '\$${(subtotal * 0.15).toStringAsFixed(2)}', 'value': 0.15},
-    {'label': '20%', 'sub': '\$${(subtotal * 0.20).toStringAsFixed(2)}', 'value': 0.20},
-    {'label': '25%', 'sub': '\$${(subtotal * 0.25).toStringAsFixed(2)}', 'value': 0.25},
-    {'label': 'No Tip', 'sub': '', 'value': 0.0},
-    {'label': 'Custom', 'sub': '', 'value': null},
-  ];
-
-  return Center(
-    child: Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        const Text('Add a tip:', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-        const SizedBox(height: 4),
-        Text('Your total: \$${subtotal.toStringAsFixed(2)}',
-            style: const TextStyle(fontSize: 16, color: Colors.grey)),
-        const SizedBox(height: 16),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0),
-          child: GridView.count(
-            shrinkWrap: true,
-            crossAxisCount: 2,
-            mainAxisSpacing: 12,
-            crossAxisSpacing: 12,
-            childAspectRatio: 2.5,
-            children: tipOptions.map((tipOption) {
-              return ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color.fromARGB(255, 4, 123, 179),
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Text('Add a tip:',
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 4),
+          Text('Your total: \$${subtotal.toStringAsFixed(2)}',
+              style: const TextStyle(fontSize: 16, color: Colors.grey)),
+          const SizedBox(height: 16),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24.0),
+            child: GridView.count(
+              shrinkWrap: true,
+              crossAxisCount: 2,
+              mainAxisSpacing: 12,
+              crossAxisSpacing: 12,
+              childAspectRatio: 2.5,
+              children: tipOptions.map((tipOption) {
+                return ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color.fromARGB(255, 4, 123, 179),
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
                   ),
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                ),
-                onPressed: () {
-                  final value = tipOption['value'];
-                  if (value == null) {
-                    showDialog(
-                      context: context,
-                      builder: (context) {
-                        return AlertDialog(
-                          title: const Text('Enter Custom Tip'),
-                          content: TextField(
-                            keyboardType: TextInputType.number,
-                            decoration: const InputDecoration(
-                              hintText: 'Tip Amount',
-                              suffixText: '%',
-                            ),
-                            onChanged: (val) {
-                              final percent = double.tryParse(val);
-                              if (percent != null) {
-                                setState(() {
-                                  tip = subtotal * (percent / 100);
-                                });
-                              }
-                            },
-                          ),
-                          actions: [
-                            TextButton(
-                              onPressed: () {
-                                Navigator.of(context).pop();
-                                _checkoutHelper(1);
+                  onPressed: () {
+                    final value = tipOption['value'];
+                    if (value == null) {
+                      showDialog(
+                        context: context,
+                        builder: (context) {
+                          return AlertDialog(
+                            title: const Text('Enter Custom Tip'),
+                            content: TextField(
+                              keyboardType: TextInputType.number,
+                              decoration: const InputDecoration(
+                                hintText: 'Tip Amount',
+                                suffixText: '%',
+                              ),
+                              onChanged: (val) {
+                                final percent = double.tryParse(val);
+                                if (percent != null) {
+                                  setState(() {
+                                    tip = subtotal * (percent / 100);
+                                  });
+                                }
                               },
-                              child: const Text('OK'),
                             ),
-                          ],
-                        );
-                      },
-                    );
-                  } else {
-                    setState(() {
-                      tip = subtotal * (value as double);
-                      _checkoutHelper(1);
-                    });
-                  }
-                },
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(tipOption['label'] as String,
-                        style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-                    if ((tipOption['sub'] as String).isNotEmpty)
-                      Text(
-                        tipOption['sub'] as String,
-                        style: const TextStyle(fontSize: 14, color: Colors.white70),
-                      ),
-                  ],
-                ),
-              );
-            }).toList(),
+                            actions: [
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+                                  _checkoutHelper(1);
+                                },
+                                child: const Text('OK'),
+                              ),
+                            ],
+                          );
+                        },
+                      );
+                    } else {
+                      setState(() {
+                        tip = subtotal * (value as double);
+                        _checkoutHelper(1);
+                      });
+                    }
+                  },
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(tipOption['label'] as String,
+                          style: const TextStyle(
+                              fontSize: 22, fontWeight: FontWeight.bold)),
+                      if ((tipOption['sub'] as String).isNotEmpty)
+                        Text(
+                          tipOption['sub'] as String,
+                          style: const TextStyle(
+                              fontSize: 14, color: Colors.white70),
+                        ),
+                    ],
+                  ),
+                );
+              }).toList(),
+            ),
           ),
-        ),
-      ],
-    ),
-  );
-}
-
-
-Widget _buildPaymentOption(List<String> cartItems) {
-  final subtotal = _calculateSubtotal(cartItems);
-  final tax = subtotal * taxRate;
-  final total = subtotal + tax + tip;
-
-  return Padding(
-    padding: const EdgeInsets.all(16.0),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text('Payment', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-        const SizedBox(height: 4),
-        const Text('Select payment method', style: TextStyle(fontSize: 16, color: Colors.grey)),
-        const SizedBox(height: 16),
-
-        Wrap(
-          spacing: 16,
-          runSpacing: 16,
-          children: [
-            _paymentButton(Icons.credit_card, 'Credit Card',
-              isSelected: _selectedPaymentIndex == 0,
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => PaymentProcessingPage(
-                      cartItems: cartItems,
-                      priceLookup: buttonLabels,
-                      tip: tip,
-                    ),
-                  ),
-                );
-              },
-            ),
-            _paymentButton(Icons.credit_card, 'Debit Card',
-              isSelected: _selectedPaymentIndex == 1,
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => PaymentProcessingPage(
-                      cartItems: cartItems,
-                      priceLookup: buttonLabels,
-                      tip: tip,
-                    ),
-                  ),
-                );
-              },
-            ),
-            _paymentButton(Icons.attach_money, 'Cash',
-              isSelected: _selectedPaymentIndex == 2,
-              onTap: () => _setPaymentMethod(2)),
-            _paymentButton(Icons.share, 'Other',
-              isSelected: _selectedPaymentIndex == 3,
-              onTap: () => _setPaymentMethod(3)),
-          ],
-        ),
-
-        const SizedBox(height: 24),
-
-        // Cash
-        if (_selectedPaymentIndex == 2) ...[
-          const Text('Cash Payment', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 12),
-          buildInputField('Enter Cash Received',
-              prefixText: '\$',
-              controller: _cashInputController,
-              keyboardType: TextInputType.number),
-          if (_cashError != null)
-            Padding(
-              padding: const EdgeInsets.only(top: 8),
-              child: Text(_cashError!, style: const TextStyle(color: Colors.red)),
-            ),
-          const SizedBox(height: 12),
-          if (_cashChange != null)
-            Text('Change: \$${_cashChange!.toStringAsFixed(2)}',
-                style: const TextStyle(fontWeight: FontWeight.bold)),
         ],
+      ),
+    );
+  }
 
-        // Other Payment Options
-        if (_selectedPaymentIndex == 3) ...[
-          const Text('Other Payment Methods',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 12),
+  Widget _buildPaymentOption(List<String> cartItems) {
+    final subtotal = _calculateSubtotal(cartItems);
+    final tax = subtotal * taxRate;
+    final total = subtotal + tax + tip;
+
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('Payment',
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 4),
+          const Text('Select payment method',
+              style: TextStyle(fontSize: 16, color: Colors.grey)),
+          const SizedBox(height: 16),
+
           Wrap(
-            spacing: 12,
+            spacing: 16,
+            runSpacing: 16,
             children: [
-              ElevatedButton.icon(
-                onPressed: () => _handleExternalService('PayPal'),
-                icon: const Icon(Icons.account_balance_wallet),
-                label: const Text('PayPal'),
+              _paymentButton(
+                Icons.credit_card,
+                'Credit Card',
+                isSelected: _selectedPaymentIndex == 0,
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => PaymentProcessingPage(
+                        cartItems: cartItems,
+                        priceLookup: buttonLabels,
+                        tip: tip,
+                      ),
+                    ),
+                  );
+                },
               ),
-              ElevatedButton.icon(
-                onPressed: () => _handleExternalService('Venmo'),
-                icon: const Icon(Icons.send),
-                label: const Text('Venmo'),
+              _paymentButton(
+                Icons.credit_card,
+                'Debit Card',
+                isSelected: _selectedPaymentIndex == 1,
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => PaymentProcessingPage(
+                        cartItems: cartItems,
+                        priceLookup: buttonLabels,
+                        tip: tip,
+                      ),
+                    ),
+                  );
+                },
+              ),
+              _paymentButton(Icons.attach_money, 'Cash',
+                  isSelected: _selectedPaymentIndex == 2,
+                  onTap: () => _setPaymentMethod(2)),
+              _paymentButton(Icons.share, 'Other',
+                  isSelected: _selectedPaymentIndex == 3,
+                  onTap: () => _setPaymentMethod(3)),
+            ],
+          ),
+
+          const SizedBox(height: 24),
+
+          // Cash
+          if (_selectedPaymentIndex == 2) ...[
+            const Text('Cash Payment',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 12),
+            buildInputField('Enter Cash Received',
+                prefixText: '\$',
+                controller: _cashInputController,
+                keyboardType: TextInputType.number),
+            if (_cashError != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: Text(_cashError!,
+                    style: const TextStyle(color: Colors.red)),
+              ),
+            const SizedBox(height: 12),
+            if (_cashChange != null)
+              Text('Change: \$${_cashChange!.toStringAsFixed(2)}',
+                  style: const TextStyle(fontWeight: FontWeight.bold)),
+          ],
+
+          // Other Payment Options
+          if (_selectedPaymentIndex == 3) ...[
+            const Text('Other Payment Methods',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 12,
+              children: [
+                ElevatedButton.icon(
+                  onPressed: () => _handleExternalService('PayPal'),
+                  icon: const Icon(Icons.account_balance_wallet),
+                  label: const Text('PayPal'),
+                ),
+                ElevatedButton.icon(
+                  onPressed: () => _handleExternalService('Venmo'),
+                  icon: const Icon(Icons.send),
+                  label: const Text('Venmo'),
+                ),
+              ],
+            )
+          ],
+
+          if (_selectedPaymentIndex == 99) ...[
+            const SizedBox(height: 16),
+            const Text('No payment method selected.',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+          ],
+
+          const Spacer(),
+
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text('Total',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+              Text('\$${total.toStringAsFixed(2)}',
+                  style: const TextStyle(
+                      fontWeight: FontWeight.bold, fontSize: 16)),
+            ],
+          ),
+          const SizedBox(height: 12),
+
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: () => _checkoutHelper(0),
+                  child: const Text('Cancel'),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.black,
+                    foregroundColor: const Color.fromARGB(255, 196, 222, 243),
+                  ),
+                  onPressed: _isProcessing
+                      ? null // disables the button while processing
+                      : () async {
+                          setState(() {
+                            _isProcessing = true;
+                          });
+
+                          await _processPayment(total);
+
+                          final provider = context.read<ShoppingCartList>();
+                          for (var item in provider.items.toSet()) {
+                            provider.removeAll(item);
+                          }
+
+                          setState(() {
+                            _isProcessing = false;
+                          });
+                        },
+                  child: const Text('Complete Sale'),
+                ),
               ),
             ],
           )
         ],
-
-        if (_selectedPaymentIndex == 99) ...[
-          const SizedBox(height: 16),
-          const Text('No payment method selected.',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
-        ],
-
-        const Spacer(),
-
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const Text('Total', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-            Text('\$${total.toStringAsFixed(2)}',
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-          ],
-        ),
-        const SizedBox(height: 12),
-
-        Row(
-          children: [
-            Expanded(
-              child: OutlinedButton(
-                onPressed: () => _checkoutHelper(0),
-                child: const Text('Cancel'),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.black,
-                  foregroundColor: const Color.fromARGB(255, 196, 222, 243),
-                ),
-                onPressed: _isProcessing
-                  ? null // disables the button while processing
-                  : () async {
-                      setState(() {
-                        _isProcessing = true;
-                      });
-
-                      await _processPayment(total);
-
-                      final provider = context.read<ShoppingCartList>();
-                      for (var item in provider.items.toSet()) {
-                        provider.removeAll(item);
-                      }
-
-                      setState(() {
-                        _isProcessing = false;
-                      });
-                    },
-                child: const Text('Complete Sale'),
-              ),
-            ),
-          ],
-        )
-      ],
-    ),
-  );
-}
+      ),
+    );
+  }
 
   Widget _buildConfirmation() {
     return Center(

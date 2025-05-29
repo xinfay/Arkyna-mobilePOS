@@ -1,9 +1,11 @@
 import 'package:mobile_pos/models/inventory_item.dart';
+import 'package:mobile_pos/models/checkout_item.dart';
 
 class BundledItem {
   String name;
   String sku;
   List<InventoryItem>? items;
+  List<CheckoutItem>? checkoutItems = [];
   double price;
   String? stockStatus;
 
@@ -14,6 +16,23 @@ class BundledItem {
   );
 
   //TODO: add method for calculating stock status based on items
+  void calculateStockStatus() {
+    if (items == null || items!.isEmpty) {
+      stockStatus = "Missing Items";
+      return;
+    }
+    bool hasLowStock = false;
+    for (final item in items!) {
+      if (item.status == "Out of Stock") {
+        stockStatus = "Missing Items";
+        return;
+      }
+      if (item.status == "Low Stock") {
+        hasLowStock = true;
+      }
+    }
+    stockStatus = hasLowStock ? "Low Stock" : "Ready";
+  }
 
   Map<String, dynamic> toJson() => {
     'name': name,
