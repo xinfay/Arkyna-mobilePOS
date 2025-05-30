@@ -1,10 +1,12 @@
 import 'package:mobile_pos/models/inventory_item.dart';
 import 'package:mobile_pos/models/checkout_item.dart';
+import 'dart:collection';
 
 class BundledItem {
   String name;
   String sku;
-  List<InventoryItem>? items;
+  List<InventoryItem>? items = [];
+  LinkedHashMap<String, int>? itemCounts;
   List<CheckoutItem>? checkoutItems = [];
   double price;
   String? stockStatus;
@@ -15,7 +17,6 @@ class BundledItem {
     this.price, 
   );
 
-  //TODO: add method for calculating stock status based on items
   void calculateStockStatus() {
     if (items == null || items!.isEmpty) {
       stockStatus = "Missing Items";

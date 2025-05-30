@@ -5,6 +5,7 @@ import '../models/inventory_item.dart';
 import '../models/bundled_item.dart';
 import '../models/checkout_item.dart';
 import 'checkout_page.dart';
+import 'dart:collection';
 
 class InventoryPage extends StatefulWidget {
   const InventoryPage({super.key});
@@ -34,17 +35,38 @@ class _InventoryPageState extends State<InventoryPage> {
             'In Stock', 10, 'Supplier A'),
         InventoryItem('Whole Milk', 'WM-001', 'Ingredients', 4.99, 12,
             'Low Stock', 15, 'Supplier B'),
-      ]
+  ]
       ..stockStatus = 'In Stock',
-    BundledItem('Bakery Bundle', 'BB-001', 15.99)
+    BundledItem('Chicken Sandwich', 'CS-002', 11.00)
       ..items = [
         InventoryItem('Sandwich Bread', 'SB-001', 'Ingredients', 4.50, 0,
             'Out of Stock', 15, 'Local Bakery'),
-        InventoryItem('Croissant', 'CR-001', 'Bakery', 2.50, 20, 'In Stock', 5,
-            'Local Bakery'),
+        InventoryItem('Chicken Breast', 'CB-002', 'Food', 8.99, 20,
+              'In Stock', 5, 'Supplier C'),
       ]
       ..stockStatus = 'Low Stock',
   ];
+
+
+
+  // List<BundledItem> itemBundles = [
+  //   BundledItem('Cappuccino', 'CB-001', 4.50)
+  //     ..items = {
+  //       InventoryItem('Coffee Beans', 'CB-001', 'Ingredients', 12.99, 45,
+  //           'In Stock', 10, 'Supplier A'): 2,
+  //       InventoryItem('Whole Milk', 'WM-001', 'Ingredients', 4.99, 12,
+  //           'Low Stock', 15, 'Supplier B'): 1,
+  //     }
+  //     ..stockStatus = 'In Stock',
+  //   BundledItem('Bakery Bundle', 'BB-001', 15.99)
+  //     ..items = {
+  //       InventoryItem('Sandwich Bread', 'SB-001', 'Ingredients', 4.50, 0,
+  //           'Out of Stock', 15, 'Local Bakery'): 1,
+  //       InventoryItem('Croissant', 'CR-001', 'Bakery', 2.50, 20, 'In Stock', 5,
+  //           'Local Bakery'): 3,
+  //     }
+  //     ..stockStatus = 'Low Stock',
+  // ]
 
   Set<String> selectedCategories = {
     'Ingredients',
@@ -59,6 +81,14 @@ class _InventoryPageState extends State<InventoryPage> {
   @override
   void initState() {
     super.initState();
+      itemBundles[0].itemCounts = LinkedHashMap<String, int>.from({
+    'Coffee Beans': 2,
+    'Whole Milk': 1,
+  });
+    itemBundles[1].itemCounts = LinkedHashMap<String, int>.from({
+      'Sandwich Bread': 2,
+      'Chicken Breast': 1,
+    });
     loadInventory();
   }
 
@@ -88,6 +118,8 @@ class _InventoryPageState extends State<InventoryPage> {
               'Low Stock', 15, 'Supplier B'),
           InventoryItem('Sandwich Bread', 'SB-001', 'Ingredients', 4.50, 0,
               'Out of Stock', 15, 'Local Bakery'),
+          InventoryItem('Chicken Breast', 'CB-002', 'Food', 8.99, 20,
+              'In Stock', 5, 'Supplier C'),
         ];
       });
     }
@@ -678,34 +710,103 @@ class _InventoryPageState extends State<InventoryPage> {
                                         child: const Text('Cancel'),
                                       ),
                                       ElevatedButton(
-                                        onPressed: () {
-                                          if (isNewBundle &&
-                                              newName.isNotEmpty &&
-                                              newSku.isNotEmpty &&
-                                              newPrice != null) {
-                                            setState(() {
-                                              itemBundles.add(BundledItem(
-                                                  newName, newSku, newPrice!)
-                                                ..checkoutItems =
-                                                    List<CheckoutItem>.from(
-                                                        selectedCheckoutItems));
-                                            });
-                                            Navigator.of(context).pop();
-                                          } else if (!isNewBundle &&
-                                              selectedBundleName != null) {
-                                            final bundle =
-                                                itemBundles.firstWhere((b) =>
-                                                    b.name ==
-                                                    selectedBundleName);
-                                            setState(() {
-                                              bundle.checkoutItems ??= [];
-                                              bundle.checkoutItems!.addAll(
-                                                  selectedCheckoutItems);
-                                            });
-                                            Navigator.of(context).pop();
-                                          }
+                                        onPressed: () async {
+                                          Map<String, int> tempCounts = { for (var item in inventoryItems) item.name: 0 };
+                                          bool savePressed = false;
+                                          await showDialog(
+                                            context: context,
+                                            builder: (context) {
+                                              return StatefulBuilder(
+                                                builder: (context, setDialogState) {
+                                                  return AlertDialog(
+                                                    title: const Text('Select Item Quantities'),
+                                                    content: SizedBox(
+                                                      width: 400,
+                                                      child: ListView(
+                                                        shrinkWrap: true,
+                                                        children: inventoryItems.map((item) {
+                                                          return Padding(
+                                                            padding: const EdgeInsets.symmetric(vertical: 8.0),
+                                                            child: Row(
+                                                              children: [
+                                                                Expanded(child: Text(item.name)),
+                                                                IconButton(
+                                                                  icon: const Icon(Icons.remove_circle_outline),
+                                                                  onPressed: () {
+                                                                    setDialogState(() {
+                                                                      if (tempCounts[item.name]! > 0) {
+                                                                        tempCounts[item.name] = tempCounts[item.name]! - 1;
+                                                                      }
+                                                                    });
+                                                                  },
+                                                                ),
+                                                                Text('${tempCounts[item.name]}'),
+                                                                IconButton(
+                                                                  icon: const Icon(Icons.add_circle_outline),
+                                                                  onPressed: () {
+                                                                    setDialogState(() {
+                                                                      tempCounts[item.name] = tempCounts[item.name]! + 1;
+                                                                    });
+                                                                  },
+                                                                ),
+                                                              ],
+                                                            ),
+                                                          );
+                                                        }).toList(),
+                                                      ),
+                                                    ),
+                                                    actions: [
+                                                      TextButton(
+                                                        onPressed: () => Navigator.of(context).pop(),
+                                                        child: const Text('Cancel'),
+                                                      ),
+                                                      ElevatedButton(
+                                                        onPressed: () {
+                                                          savePressed = true;
+                                                          Navigator.of(context).pop(tempCounts);
+                                                          Navigator.of(context).pop(); // Close the outer dialog
+                                                        },
+                                                        child: const Text('Save'),
+                                                      ),
+                                                    ],
+                                                  );
+                                                },
+                                              );
+                                            },
+                                          ).then((result) {
+                                            if (savePressed && result != null && result is Map<String, int>) {
+                                              if (isNewBundle && newName.isNotEmpty && newSku.isNotEmpty && newPrice != null) {
+                                                setState(() {
+                                                  // Get the list of InventoryItems matching the selected names in itemCounts (with count > 0)
+                                                  final selectedItemNames = result.keys.where((k) => result[k]! > 0).toSet();
+                                                  final selectedItems = inventoryItems.where((item) => selectedItemNames.contains(item.name)).toList();
+                                                  final newBundle = BundledItem(newName, newSku, newPrice!)
+                                                    ..checkoutItems = List<CheckoutItem>.from(selectedCheckoutItems)
+                                                    ..itemCounts = LinkedHashMap<String, int>.from(
+                                                      result..removeWhere((key, value) => value == 0),
+                                                    )
+                                                    ..items = selectedItems;
+                                                  itemBundles.add(newBundle);
+                                                });
+                                              } else if (!isNewBundle && selectedBundleName != null) {
+                                                final bundle = itemBundles.firstWhere((b) => b.name == selectedBundleName);
+                                                setState(() {
+                                                  bundle.checkoutItems ??= [];
+                                                  bundle.checkoutItems!.addAll(selectedCheckoutItems);
+                                                  if (bundle.itemCounts == null) {
+                                                    bundle.itemCounts = LinkedHashMap<String, int>();
+                                                  }
+                                                  result.forEach((key, value) {
+                                                    if (value > 0) {
+                                                      bundle.itemCounts![key] = (bundle.itemCounts![key] ?? 0) + value;
+                                                    }
+                                                  });
+                                                });
+                                              }
+                                            }
+                                          });
                                         },
-                                        child: const Text('Save'),
+                                        child: const Text('Next'),
                                       ),
                                     ],
                                   );
@@ -848,7 +949,6 @@ class _InventoryPageState extends State<InventoryPage> {
                           children: [
                             TextButton(
                               onPressed: () {
-                                // TODO: Implement view bundle details
                                 showDialog(
                                   context: context,
                                   builder: (context) => AlertDialog(
@@ -858,6 +958,23 @@ class _InventoryPageState extends State<InventoryPage> {
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
                                       children: [
+                                        if (bundle.itemCounts != null && bundle.itemCounts!.isNotEmpty) ...[
+                                          Padding(
+                                            padding: const EdgeInsets.only(bottom: 8.0),
+                                            child: Column(
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              children: bundle.itemCounts!.entries.map((entry) =>
+                                                Row(
+                                                  children: [
+                                                    Expanded(child: Text(entry.key, style: const TextStyle(fontWeight: FontWeight.w500))),
+                                                    Text('x${entry.value}', style: const TextStyle(fontWeight: FontWeight.bold)),
+                                                  ],
+                                                )
+                                              ).toList(),
+                                            ),
+                                          ),
+                                        ],
+                                        const SizedBox(height: 8),
                                         const Text('Items in this bundle:',
                                             style: TextStyle(
                                                 fontWeight: FontWeight.bold)),
@@ -926,8 +1043,8 @@ class _InventoryPageState extends State<InventoryPage> {
                                               labelText: 'Price',
                                               prefixText: '\$',
                                             ),
-                                            keyboardType:
-                                                TextInputType.numberWithOptions(
+                                            keyboardType: TextInputType
+                                                .numberWithOptions(
                                                     decimal: true),
                                             initialValue:
                                                 bundle.price.toStringAsFixed(2),
@@ -1235,9 +1352,11 @@ class _InventoryPageState extends State<InventoryPage> {
                       ),
                     ),
                   ],
-                ),
+                
               )),
-        ],
+      
+          )
+        ]
       );
     }
   }
@@ -1367,20 +1486,19 @@ class _InventoryPageState extends State<InventoryPage> {
                                         labelText: 'Price',
                                         prefixText: '\$',
                                       ),
-                                      keyboardType:
-                                          TextInputType.numberWithOptions(
+                                      keyboardType: TextInputType
+                                          .numberWithOptions(
                                               decimal: true),
-                                      initialValue:
-                                          item.price.toStringAsFixed(2),
-                                      onChanged: (value) =>
-                                          editedPrice = double.tryParse(value),
+                                      initialValue: item.price.toStringAsFixed(2),
+                                      onChanged: (value) => editedPrice =
+                                          double.tryParse(value),
                                     ),
                                     TextFormField(
                                       decoration: const InputDecoration(
                                         labelText: 'Stock',
                                       ),
-                                      keyboardType:
-                                          TextInputType.numberWithOptions(
+                                      keyboardType: TextInputType
+                                          .numberWithOptions(
                                               decimal: false),
                                       initialValue: item.stock.toString(),
                                       onChanged: (value) =>
@@ -1390,8 +1508,8 @@ class _InventoryPageState extends State<InventoryPage> {
                                       decoration: const InputDecoration(
                                         labelText: 'Minimum Stock',
                                       ),
-                                      keyboardType:
-                                          TextInputType.numberWithOptions(
+                                      keyboardType: TextInputType
+                                          .numberWithOptions(
                                               decimal: false),
                                       initialValue: item.minStock.toString(),
                                       onChanged: (value) => editedMinStock =
