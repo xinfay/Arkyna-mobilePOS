@@ -209,6 +209,20 @@ class _SalesTabState extends State<SalesTab> {
             topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
             rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
           ),
+
+          lineTouchData: LineTouchData(
+            touchTooltipData: LineTouchTooltipData(
+              getTooltipItems: (touchedSpots) {
+                return touchedSpots.map((spot) {
+                  return LineTooltipItem(
+                    '\$${spot.y.toStringAsFixed(2)}',
+                    const TextStyle(color: Colors.black),
+                  );
+                }).toList();
+              },
+            ),
+          ),
+
           lineBarsData: [
             LineChartBarData(
               isCurved: true,

@@ -7,6 +7,10 @@ class Order {
   final double tip;
   final double total;
 
+    // TEMP fields for filtering UI:
+  final String paymentMethod;
+  final String status;
+
   Order({
     required this.id,
     required this.timestamp,
@@ -15,6 +19,9 @@ class Order {
     required this.tax,
     required this.tip,
     required this.total,
+
+    this.paymentMethod = 'TO DO',   // defaulted - CHANGE
+    this.status = 'TO DO',     // defaulted - CHANGE
   });
 
   Map<String, dynamic> toJson() => {

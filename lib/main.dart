@@ -5,6 +5,7 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import 'app.dart';
 import 'providers/cart_provider.dart';
+import 'providers/transaction_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -16,8 +17,11 @@ void main() async {
   }
 
   runApp(
-    ChangeNotifierProvider(
-      create: (_) => ShoppingCartList(),
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => ShoppingCartList()),
+        ChangeNotifierProvider(create: (_) => TransactionProvider()),
+      ],
       child: const MyApp(),
     ),
   );
